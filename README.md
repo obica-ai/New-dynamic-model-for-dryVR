@@ -1,4 +1,7 @@
-DryVR 2.0 is a software for hybrid system verification. Please find the documentation at 
+DryVR 2.0 is a software tool for verifying hybrid systems. It supports reachability analysis of _gray-box_ systems,
+that is, systems that are described in part as a transition system and in part as a black-box simulator.
+
+Please find the documentation at 
 
 http://dryvr-02.readthedocs.io/en/latest/
 
