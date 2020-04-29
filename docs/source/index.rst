@@ -12,7 +12,7 @@ DryVR is a framework for verifying cyber-physical systems. It specifically handl
    :maxdepth: 2
 
    status
-   installtion
+   installation
    usage
    dryvr's_language
    dryvr's_control_synthesis
