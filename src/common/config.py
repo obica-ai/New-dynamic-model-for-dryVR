@@ -1,3 +1,5 @@
+""" Global Configurations """
+
 # Verification config
 SIMUTESTNUM = 1
 SIMTRACENUM = 10

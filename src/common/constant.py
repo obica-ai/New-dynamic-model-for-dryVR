@@ -6,7 +6,7 @@ This file contains constant for DryVR
 DEBUG = False
 PLOTGRAPH = True
 
-#Flag value
+# Flag value
 SAFE = 1
 UNSAFE = -1
 UNKNOWN = 0
@@ -14,7 +14,7 @@ NOSTATUS = 99
 BLOATDEBUG = False
 PLOTDIM = 2
 
-# File Pathes
+# File Paths
 GRAPHOUTPUT = 'output/curGraph.png'
 RRTGRAPHPOUTPUT = 'output/rrtGraph.png'
 SIMRESULTOUTPUT = 'output/Traj.txt'
