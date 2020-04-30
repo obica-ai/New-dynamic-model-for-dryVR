@@ -25,6 +25,21 @@ $ pip2 install --user glpk networkx python-igraph matplotlib numpy scipy \
     sympy z3-solver six
 ```
 
+For Python 3.5 or above on Ubuntu 16.04, try the following instructions.
+
+```bash
+$ sudo apt-get install python3-pip python3-cairo python3-tk python3-pygraphviz \
+    libglpk-dev
+$ pip3 install --user --upgrade pip  # Upgrade pip first
+$ pip3 install --user -r requirements.txt
+```
+
+If using Python 3 `venv` virtual environment on Ubuntu 16.04, try the following instructions.
+```bash
+$ sudo apt-get install python3-pip libcairo2-dev libgraphviz-dev libglpk-dev
+$ pip3 install --upgrade pip  # Upgrade pip first
+$ pip3 install -r requirements.txt
+```
 
 Quick Start
 ==================
