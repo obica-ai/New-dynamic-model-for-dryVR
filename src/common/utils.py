@@ -36,13 +36,20 @@ def importSimFunction(path):
         simulation function
 
     """
-    path = path.replace('/', '.')
     try:
-        module = importlib.import_module(path)
-    except ImportError:
-        print("Import simulation function failed!")
+        # FIXME TC_Simulate should just be a simple call back function
+        import os
+        import sys
+        sys.path.append(os.path.abspath(path))
+        mod_name = path.replace('/', '.')
+        module = importlib.import_module(mod_name)
+        sys.path.pop()
 
-    return module.TC_Simulate
+        return module.TC_Simulate
+    except ImportError as e:
+        print("Import simulation function failed!")
+        print(e)
+        exit()  # TODO Proper return
 
 
 def randomPoint(lower, upper):
