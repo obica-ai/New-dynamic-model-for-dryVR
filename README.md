@@ -22,7 +22,7 @@ Install PyPi dependencies using `pip`:
 ```bash
 $ pip2 install --user --upgrade pip  # Upgrade pip first
 $ pip2 install --user glpk networkx python-igraph matplotlib numpy scipy \
-    sympy z3-solver
+    sympy z3-solver six
 ```
 
 

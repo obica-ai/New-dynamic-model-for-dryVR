@@ -10,7 +10,7 @@ Ubuntu 16.04.
         libglpk-dev
     $ pip2 install --user --upgrade pip
     $ pip2 install --user glpk networkx python-igraph matplotlib numpy scipy \
-        sympy z3-solver
+        sympy z3-solver six
 
 
 If you wish to install DryVR on other operation systems,
@@ -20,6 +20,7 @@ please make sure the following packages are correctly installed.
 
   * Including `Python Tkinter <https://docs.python.org/2.7/library/tk.html>`_
 
+- `Six <https://six.readthedocs.io/>`_
 - `NumPy <https://numpy.org/>`_
 - `SciPy <https://www.scipy.org/>`_
 - `matplotlib <https://matplotlib.org/>`_
