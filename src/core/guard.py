@@ -3,34 +3,37 @@ This file contains guard class for DryVR
 """
 
 import random
-import sympy
 
-from src.common.utils import handleReplace
+import sympy
 from z3 import *
 
-class Guard():
+from src.common.utils import handleReplace
+
+
+class Guard:
     """
     This is class to calculate the set in the 
     reach tube that intersect with the guard
     """
+
     def __init__(self, variables):
         """
         Guard checker class initialization function.
 
         Args:
-            variables (list): list of varibale name
+            variables (list): list of variable name
         """
-        self.varDic = {'t':Real('t')}
+        self.varDic = {'t': Real('t')}
         self.variables = variables
         for var in variables:
             self.varDic[var] = Real(var)
 
-    def _buildGuard(self, guardStr):
+    def _build_guard(self, guard_str):
         """
         Build solver for current guard based on guard string
 
         Args:
-            guardStr (str): the guard string.
+            guard_str (str): the guard string.
             For example:"And(v>=40-0.1*u, v-40+0.1*u<=0)"
 
         Returns:
@@ -38,24 +41,23 @@ class Guard():
             A symbol index dic obj that indicates the index
             of variables that involved in the guard.
         """
-        curSolver = Solver()
-        # This magic line here is because sympy will evaluate == to be False
+        cur_solver = Solver()
+        # This magic line here is because SymPy will evaluate == to be False
         # Therefore we are not be able to get free symbols from it
         # Thus we need to replace "==" to something else
-        sympyGuardStr = guardStr.replace("==",">=")
+        sympy_guard_str = guard_str.replace("==", ">=")
 
-        symbols = list(sympy.sympify(sympyGuardStr, evaluate=False).free_symbols)
+        symbols = list(sympy.sympify(sympy_guard_str, evaluate=False).free_symbols)
         symbols = [str(s) for s in symbols]
-        symbolsIdx = {s:self.variables.index(s)+1 for s in symbols if s in self.variables}
+        symbols_idx = {s: self.variables.index(s) + 1 for s in symbols if s in self.variables}
         if 't' in symbols:
-            symbolsIdx['t'] = 0
+            symbols_idx['t'] = 0
 
+        guard_str = handleReplace(guard_str, list(self.varDic.keys()))
+        cur_solver.add(eval(guard_str))  # TODO use an object instead of `eval` a string
+        return cur_solver, symbols_idx
 
-        guardStr = handleReplace(guardStr,self.varDic.keys())
-        curSolver.add(eval(guardStr))
-        return curSolver, symbolsIdx
-
-    def guardSimuTrace(self, trace, guardStr):
+    def guard_sim_trace(self, trace, guard_str):
         """
         Check the guard for simulation trace.
         Note we treat the simulation trace as the set as well.
@@ -65,11 +67,11 @@ class Guard():
         [0.2, 1.05, 1.14]
         ...
         We can build set like
-        lowerbound: [0.0, 1.0, 1.1]
-        upperbound: [0.1, 1.02, 1.13]
+        lower_bound: [0.0, 1.0, 1.1]
+        upper_bound: [0.1, 1.02, 1.13]
 
-        lowerbound: [0.1, 1.02, 1.13]
-        upperbound: [0.2, 1.05, 1.14]
+        lower_bound: [0.1, 1.02, 1.13]
+        upper_bound: [0.2, 1.05, 1.14]
         And check guard for these set. This is because if the guard
         is too small, it is likely for simulation point ignored the guard.
         For example:
@@ -78,116 +80,114 @@ class Guard():
 
         Args:
             trace (list): the simulation trace
-            guardStr (str): the guard string.
+            guard_str (str): the guard string.
             For example:"And(v>=40-0.1*u, v-40+0.1*u<=0)"
 
         Returns:
             A initial point for next mode,
             The truncated simulation trace
         """
-        if not guardStr:
+        if not guard_str:
             return None, trace
-        curSolver, symbols = self._buildGuard(guardStr)
-        guardSet = {}
+        cur_solver, symbols = self._build_guard(guard_str)
+        guard_set = {}
 
-        for idx in range(len(trace)-1):
+        for idx in range(len(trace) - 1):
             lower = trace[idx]
-            upper = trace[idx+1]
-            curSolver.push()
+            upper = trace[idx + 1]
+            cur_solver.push()
             for symbol in symbols:
-                curSolver.add(self.varDic[symbol] >= min(lower[symbols[symbol]], upper[symbols[symbol]]))
-                curSolver.add(self.varDic[symbol] <= max(lower[symbols[symbol]], upper[symbols[symbol]]))
-            if curSolver.check() == sat:
-                curSolver.pop()
-                guardSet[idx] = upper
+                cur_solver.add(self.varDic[symbol] >= min(lower[symbols[symbol]], upper[symbols[symbol]]))
+                cur_solver.add(self.varDic[symbol] <= max(lower[symbols[symbol]], upper[symbols[symbol]]))
+            if cur_solver.check() == sat:
+                cur_solver.pop()
+                guard_set[idx] = upper
             else:
-                curSolver.pop()
-                if guardSet:
+                cur_solver.pop()
+                if guard_set:
                     # Guard set is not empty, randomly pick one and return
-                    idx, point = random.choice(list(guardSet.items()))
-                    # Return the initial point for next mode, and truncked trace
-                    return point[1:], trace[:idx+1]
+                    idx, point = random.choice(list(guard_set.items()))
+                    # Return the initial point for next mode, and truncated trace
+                    return point[1:], trace[:idx + 1]
 
         # No guard hits for current tube
         return None, trace
 
-    def guardSimuTraceTime(self, trace, guardStr):
+    def guard_sim_trace_time(self, trace, guard_str):
         """
         Return the length of the truncated traces
 
         Args:
             trace (list): the simulation trace
-            guardStr (str): the guard string.
+            guard_str (str): the guard string.
             For example:"And(v>=40-0.1*u, v-40+0.1*u<=0)"
 
         Returns:
             the length of the truncated traces.
         """
-        nextInit, trace = self.guardSimuTrace(trace, guardStr)
+        next_init, trace = self.guard_sim_trace(trace, guard_str)
         return len(trace)
 
-
-
-    def guardReachTube(self, tube, guardStr):
+    def guard_reachtube(self, tube, guard_str):
         """
         Check the guard intersection of the reach tube
 
 
         Args:
             tube (list): the reach tube
-            guardStr (str): the guard string.
+            guard_str (str): the guard string.
             For example:"And(v>=40-0.1*u, v-40+0.1*u<=0)"
 
         Returns:
-            Next mode initial set represent as [upperbound, lowerbound],
+            Next mode initial set represent as [upper_bound, lower_bound],
             Truncated tube before the guard,
             The time when elapsed in current mode.
 
         """
-        if not guardStr:
+        if not guard_str:
             return None, tube
 
-        curSolver, symbols = self._buildGuard(guardStr)
-        guardSetLower = []
-        guardSetUpper = []
-        for i in range(0,len(tube),2):
-            curSolver.push()
-            lowerBound = tube[i]
-            upperBound = tube[i+1]
+        cur_solver, symbols = self._build_guard(guard_str)
+        guard_set_lower = []
+        guard_set_upper = []
+        for i in range(0, len(tube), 2):
+            cur_solver.push()
+            lower_bound = tube[i]
+            upper_bound = tube[i + 1]
             for symbol in symbols:
-                curSolver.add(self.varDic[symbol] >= lowerBound[symbols[symbol]])
-                curSolver.add(self.varDic[symbol] <= upperBound[symbols[symbol]])
+                cur_solver.add(self.varDic[symbol] >= lower_bound[symbols[symbol]])
+                cur_solver.add(self.varDic[symbol] <= upper_bound[symbols[symbol]])
 
-            if curSolver.check() == sat:
+            if cur_solver.check() == sat:
                 # The reachtube hits the guard
-                curSolver.pop()
-                guardSetLower.append(lowerBound)
-                guardSetUpper.append(upperBound)
+                cur_solver.pop()
+                guard_set_lower.append(lower_bound)
+                guard_set_upper.append(upper_bound)
             else:
-                curSolver.pop()
-                if guardSetLower:
+                cur_solver.pop()
+                if guard_set_lower:
                     # Guard set is not empty, build the next initial set and return
-                    # At some point we might futher reduce the initial set for next mode
-                    initLower = guardSetLower[0][1:]
-                    initUpper = guardSetUpper[0][1:]
-                    for j in range(1,len(guardSetLower)):
-                        for k in range(1,len(guardSetLower[0])):
-                            initLower[k-1] = min(initLower[k-1], guardSetLower[j][k])
-                            initUpper[k-1] = max(initUpper[k-1], guardSetUpper[j][k])
+                    # At some point we might further reduce the initial set for next mode
+                    init_lower = guard_set_lower[0][1:]
+                    init_upper = guard_set_upper[0][1:]
+                    for j in range(1, len(guard_set_lower)):
+                        for k in range(1, len(guard_set_lower[0])):
+                            init_lower[k - 1] = min(init_lower[k - 1], guard_set_lower[j][k])
+                            init_upper[k - 1] = max(init_upper[k - 1], guard_set_upper[j][k])
                     # Return next initial Set, the result tube, and the true transit time
-                    return [initLower,initUpper], tube[:i], guardSetLower[0][0]
+                    return [init_lower, init_upper], tube[:i], guard_set_lower[0][0]
 
         # Construct the guard if all later trace sat the guard condition
-        if guardSetLower:
+        if guard_set_lower:
             # Guard set is not empty, build the next initial set and return
-            # At some point we might futher reduce the initial set for next mode
-            initLower = guardSetLower[0][1:]
-            initUpper = guardSetUpper[0][1:]
-            for j in range(1,len(guardSetLower)):
-                for k in range(1,len(guardSetLower[0])):
-                    initLower[k-1] = min(initLower[k-1], guardSetLower[j][k])
-                    initUpper[k-1] = max(initUpper[k-1], guardSetUpper[j][k])
+            # At some point we might further reduce the initial set for next mode
+            init_lower = guard_set_lower[0][1:]
+            init_upper = guard_set_upper[0][1:]
+            for j in range(1, len(guard_set_lower)):
+                for k in range(1, len(guard_set_lower[0])):
+                    init_lower[k - 1] = min(init_lower[k - 1], guard_set_lower[j][k])
+                    init_upper[k - 1] = max(init_upper[k - 1], guard_set_upper[j][k])
             # Return next initial Set, the result tube, and the true transit time
-            return [initLower,initUpper], tube[:i], guardSetLower[0][0]
+            return [init_lower, init_upper], tube[:i], guard_set_lower[0][0]
 
         return None, tube, tube[-1][0]

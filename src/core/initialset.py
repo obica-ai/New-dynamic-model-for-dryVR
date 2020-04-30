@@ -2,22 +2,24 @@
 This file contains initial set class for DryVR
 """
 
-class InitialSet():
+
+class InitialSet:
     """
     This is class to represent the initial set
     """
+
     def __init__(self, lower, upper):
         """
         Initial set class initialization function.
 
         Args:
-            lower (list): lowerbound of the initial set
-            upper (list): upperbound of the initial set
+            lower (list): lower bound of the initial set
+            upper (list): upper bound of the initial set
         """
 
-        self.lowerBound = lower
-        self.upperBound = upper
-        self.delta = [(upper[i]-lower[i])/2.0 for i in range(len(upper))]
+        self.lower_bound = lower
+        self.upper_bound = upper
+        self.delta = [(upper[i] - lower[i]) / 2.0 for i in range(len(upper))]
         # Child point points to children InitialSetStack obj
         # This it how it works
         # Since a initial set can generate a reach tube that intersect
@@ -26,14 +28,12 @@ class InitialSet():
         # Therefore this is a dictionary obj
         # self.child["MODEA"] = InitialSetStack for MODEA
         self.child = {}
-        self.bloatedTube = []
-    
+        self.bloated_tube = []
+
     def refine(self):
         """
         This function refine the current initial set into two smaller set
 
-        Args:
-            None
         Returns:
             two refined initial set
 
@@ -42,31 +42,28 @@ class InitialSet():
         # based on index with largest delta
         idx = self.delta.index(max(self.delta))
         # Construct first smaller initial set
-        initSetOneUB = list(self.upperBound)
-        initSetOneLB = list(self.lowerBound)
-        initSetOneLB[idx] += self.delta[idx]
+        init_set_one_ub = list(self.upper_bound)
+        init_set_one_lb = list(self.lower_bound)
+        init_set_one_lb[idx] += self.delta[idx]
         # Construct second smaller initial set
-        initSetTwoUB = list(self.upperBound)
-        initSetTwoLB = list(self.lowerBound)
-        initSetTwoUB[idx] -= self.delta[idx]
+        init_set_two_ub = list(self.upper_bound)
+        init_set_two_lb = list(self.lower_bound)
+        init_set_two_ub[idx] -= self.delta[idx]
 
         return (
-            InitialSet(initSetOneLB, initSetOneUB),
-            InitialSet(initSetTwoLB, initSetTwoUB),
+            InitialSet(init_set_one_lb, init_set_one_ub),
+            InitialSet(init_set_two_lb, init_set_two_ub),
         )
 
     def __str__(self):
         """
         Build string representation for the initial set
 
-        Args:
-            None
         Returns:
             A string describes the initial set
-
         """
         ret = ""
-        ret += "Lower Bound: "+str(self.lowerBound)+"\n"
-        ret += "Upper Bound: "+str(self.upperBound)+"\n"
-        ret += "Delta: "+str(self.delta)+"\n"
-        return ret 
+        ret += "Lower Bound: " + str(self.lower_bound) + "\n"
+        ret += "Upper Bound: " + str(self.upper_bound) + "\n"
+        ret += "Delta: " + str(self.delta) + "\n"
+        return ret
