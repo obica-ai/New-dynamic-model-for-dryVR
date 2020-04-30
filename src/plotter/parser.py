@@ -37,7 +37,7 @@ def parse(data):
             LOWER = True
 
         else:
-            line = map(float, line.strip().split())
+            line = list(map(float, line.strip().split()))
             if len(line) <= 1:
                 continue
             if LOWER:
