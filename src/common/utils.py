@@ -7,11 +7,11 @@ import random
 
 from collections import namedtuple
 
-
 # This is the tuple for input file parsed by DryVR
 DryVRInput = namedtuple(
     'DryVRInput',
-    'vertex edge guards variables initialSet unsafeSet timeHorizon path resets initialVertex deterministic bloatingMethod kvalue'
+    'vertex edge guards variables initialSet unsafeSet timeHorizon path resets initialVertex deterministic '
+    'bloatingMethod kvalue '
 )
 
 # This is the tuple for rtt input file parsed by DryVR
@@ -19,6 +19,7 @@ RrtInput = namedtuple(
     'RttInput',
     'modes variables initialSet unsafeSet goalSet timeHorizon minTimeThres path goal bloatingMethod kvalue'
 )
+
 
 def importSimFunction(path):
     """
@@ -29,19 +30,27 @@ def importSimFunction(path):
         TC_Simulate(Mode, initialCondition, time_bound)
     
     Args:
-        path (str): Similator directory.
+        path (str): Simulator directory.
 
     Returns:
         simulation function
 
     """
-    path = path.replace('/', '.')
     try:
-        module = importlib.import_module(path)
-    except:
+        # FIXME TC_Simulate should just be a simple call back function
+        import os
+        import sys
+        sys.path.append(os.path.abspath(path))
+        mod_name = path.replace('/', '.')
+        module = importlib.import_module(mod_name)
+        sys.path.pop()
+
+        return module.TC_Simulate
+    except ImportError as e:
         print("Import simulation function failed!")
-    
-    return module.TC_Simulate
+        print(e)
+        exit()  # TODO Proper return
+
 
 def randomPoint(lower, upper):
     """
@@ -49,8 +58,8 @@ def randomPoint(lower, upper):
     This function supports both int or list
     
     Args:
-        lower (list or int or float): lowerbound.
-        upper (list or int or float): upperbound.
+        lower (list or int or float): lower bound.
+        upper (list or int or float): upper bound.
 
     Returns:
         random point (either float or list of float)
@@ -63,6 +72,7 @@ def randomPoint(lower, upper):
         assert len(lower) == len(upper), "Random Point List Range Error"
 
         return [random.uniform(lower[i], upper[i]) for i in range(len(lower))]
+
 
 def calcDelta(lower, upper):
     """
@@ -82,7 +92,8 @@ def calcDelta(lower, upper):
     upper = [float(val) for val in upper]
 
     assert len(lower) == len(upper), "Delta calc List Range Error"
-    return [(upper[i]-lower[i])/2 for i in range(len(upper))]
+    return [(upper[i] - lower[i]) / 2 for i in range(len(upper))]
+
 
 def calcCenterPoint(lower, upper):
     """
@@ -102,7 +113,8 @@ def calcCenterPoint(lower, upper):
     lower = [float(val) for val in lower]
     upper = [float(val) for val in upper]
     assert len(lower) == len(upper), "Center Point List Range Error"
-    return [(upper[i]+lower[i])/2 for i in range(len(upper))]
+    return [(upper[i] + lower[i]) / 2 for i in range(len(upper))]
+
 
 def buildModeStr(g, vertex):
     """
@@ -110,16 +122,17 @@ def buildModeStr(g, vertex):
     This should be something like "modeName,modeNum"
     
     Args:
-        g (obj): Graph object.
-        vertex (int): vetex number.
+        g (igraph.Graph): Graph object.
+        vertex (int or str): vertex number.
 
     Returns:
-        a string to represent a mode
+        str: a string to represent a mode
 
     """
-    return g.vs[vertex]['label']+','+str(vertex)
+    return g.vs[vertex]['label'] + ',' + str(vertex)
 
-def handleReplace(inputStr, keys):
+
+def handleReplace(input_str, keys):
     """
     Replace variable in inputStr to self.varDic["variable"]
     For example:
@@ -129,32 +142,33 @@ def handleReplace(inputStr, keys):
             And(self.varDic["y"]<=0,self.varDic["t"]>=0.2,self.varDic["v"]>=-0.1)
     
     Args:
-        inputStr (str): original string need to be replaced
+        input_str (str): original string need to be replaced
         keys (list): list of variable strings
 
     Returns:
-        a string that all variables have been replaced into a desire form
+        str: a string that all variables have been replaced into a desire form
 
     """
     idxes = []
     i = 0
-    original = inputStr
+    original = input_str
 
-    keys.sort(key=lambda s:len(s))
+    keys.sort(key=lambda s: len(s))
     for key in keys[::-1]:
-        for i in range(len(inputStr)):
-            if inputStr[i:].startswith(key):
-                idxes.append((i, i+len(key)))
-                inputStr = inputStr[:i] + "@"*len(key) + inputStr[i+len(key):]
+        for i in range(len(input_str)):
+            if input_str[i:].startswith(key):
+                idxes.append((i, i + len(key)))
+                input_str = input_str[:i] + "@" * len(key) + input_str[i + len(key):]
 
     idxes = sorted(idxes)
 
-    inputStr = original
+    input_str = original
     for idx in idxes[::-1]:
-        key = inputStr[idx[0]:idx[1]]
-        target = 'self.varDic["'+key+'"]'
-        inputStr = inputStr[:idx[0]] + target + inputStr[idx[1]:]
-    return inputStr
+        key = input_str[idx[0]:idx[1]]
+        target = 'self.varDic["' + key + '"]'
+        input_str = input_str[:idx[0]] + target + input_str[idx[1]:]
+    return input_str
+
 
 def neg(orig):
     """
@@ -172,7 +186,8 @@ def neg(orig):
         a neg condition string
 
     """
-    return 'Not('+orig+')'
+    return 'Not(' + orig + ')'
+
 
 def trimTraces(traces):
     """
@@ -191,11 +206,11 @@ def trimTraces(traces):
         trace_lengths.append(len(trace))
     trace_len = min(trace_lengths)
 
-
     for trace in traces:
         ret_traces.append(trace[:trace_len])
 
     return ret_traces
+
 
 def checkVerificationInput(data):
     """
@@ -244,18 +259,20 @@ def checkSynthesisInput(data):
     if data["bloatingMethod"] == "PW":
         assert 'kvalue' in data, "kvalue need to be provided when bloating method set to PW"
 
+
 def isIpynb():
     """
     Check if the code is running on Ipython notebook
     """
     try:
-        cfg = get_ipython().config 
+        cfg = get_ipython().config
         if "IPKernelApp" in cfg:
             return True
         else:
             return False
     except NameError:
         return False
+
 
 def overloadConfig(configObj, userConfig):
     """
@@ -283,6 +300,3 @@ def overloadConfig(configObj, userConfig):
 
     if "RANDSECTIONNUM" in userConfig:
         configObj.RANDSECTIONNUM = userConfig["RANDSECTIONNUM"]
-
-
-

@@ -5,27 +5,28 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-class Graph():
+class Graph:
     """
     This is class to plot the progress graph for dryvr's
     function, it is supposed to display the graph in jupyter
     notebook and update the graph as dryvr is running
     """
-    def __init__(self, params, isIpynb):
+
+    def __init__(self, params, is_ipynb):
         """
         Guard checker class initialization function.
 
         Args:
             params (obj): An object contains the parameter
-            isIpynb (bool): check if the code is running on ipython or not
+            is_ipynb (bool): check if the code is running on ipython or not
         """
-        self.isIpynb = isIpynb
-        if not isIpynb:
+        self._is_ipynb = is_ipynb
+        if not is_ipynb:
             return
         vertex = []
         # Build unique identifier for a vertex and mode name
-        for idx,v in enumerate(params.vertex):
-            vertex.append(v+","+str(idx))
+        for idx, v in enumerate(params.vertex):
+            vertex.append(v + "," + str(idx))
 
         edges = params.edge
         self.edgeList = []
@@ -45,8 +46,6 @@ class Graph():
         self.draw()
         plt.show()
 
-
-
     def draw(self):
         """
         Draw the white-box transition graph.
@@ -63,20 +62,19 @@ class Graph():
         nx.draw_networkx(self.G, self.pos, arrows=True, **options)
         self.fig.canvas.draw()
 
-    def update(self, curNode, title, remainTime):
+    def update(self, cur_node, title, remain_time):
         """
         update the graph 
         Args:
-            curNode (str): current vertice dryvr is verifiying
+            cur_node (str): current vertex dryvr is verifying
             title (str): current transition path as the title
-            remainTime (float): remaining time
+            remain_time (float): remaining time
         """
-        if not self.isIpynb:
+        if not self._is_ipynb:
             return
         self.ax.clear()
         self.colors = ['green'] * len(self.G.nodes())
-        self.colors[list(self.G.nodes()).index(curNode)] = 'red'
+        self.colors[list(self.G.nodes()).index(cur_node)] = 'red'
         self.fig.suptitle(title, fontsize=10)
-        self.ax.set_title("remain:"+str(remainTime))
+        self.ax.set_title("remain:" + str(remain_time))
         self.draw()
-

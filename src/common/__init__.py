@@ -19,4 +19,4 @@
 #
 #
 #     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#	Codes are far away from bugs with the protection
+# Codes are far away from bugs with the protection

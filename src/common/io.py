@@ -2,9 +2,10 @@
 This file contains IO functions for DryVR
 """
 
-import json
+import six
 
-from utils import DryVRInput, RrtInput, checkVerificationInput, checkSynthesisInput
+from src.common.utils import DryVRInput, RrtInput, checkVerificationInput, checkSynthesisInput
+
 
 def writeReachTubeFile(result, path):
     """
@@ -30,10 +31,11 @@ def writeReachTubeFile(result, path):
     """
     with open(path, 'w') as f:
         for line in result:
-            if isinstance(line, unicode) or isinstance(line, str):
-                f.write(line+'\n')
+            if isinstance(line, six.string_types):
+                f.write(line + '\n')
             elif isinstance(line, list):
-                f.write(' '.join(map(str,line))+'\n')
+                f.write(' '.join(map(str, line)) + '\n')
+
 
 def writeRrtResultFile(modes, traces, path):
     """
@@ -52,7 +54,8 @@ def writeRrtResultFile(modes, traces, path):
         for mode, trace in zip(modes, traces):
             f.write(mode + '\n')
             for line in trace:
-                f.write(" ".join(map(str, line))+'\n')
+                f.write(" ".join(map(str, line)) + '\n')
+
 
 def parseVerificationInputFile(data):
     """
@@ -109,6 +112,7 @@ def parseVerificationInputFile(data):
         kvalue=data['kvalue'],
     )
 
+
 def parseRrtInputFile(data):
     """
     Parse the json input for DryVR controller synthesis
@@ -120,7 +124,7 @@ def parseRrtInputFile(data):
         DryVR controller synthesis input object
 
     """
-    
+
     # If bloating method is missing, default global descrepancy
     if not 'bloatingMethod' in data:
         data['bloatingMethod'] = 'GLOBAL'
@@ -138,15 +142,15 @@ def parseRrtInputFile(data):
     checkSynthesisInput(data)
 
     return RrtInput(
-        modes = data["modes"],
-        variables = data["variables"],
-        initialSet = data["initialSet"],
-        unsafeSet = data["unsafeSet"],
-        goalSet = data["goalSet"],
-        timeHorizon = data["timeHorizon"],
-        minTimeThres = data["minTimeThres"],
-        path = data["directory"],
-        goal = data["goal"],
+        modes=data["modes"],
+        variables=data["variables"],
+        initialSet=data["initialSet"],
+        unsafeSet=data["unsafeSet"],
+        goalSet=data["goalSet"],
+        timeHorizon=data["timeHorizon"],
+        minTimeThres=data["minTimeThres"],
+        path=data["directory"],
+        goal=data["goal"],
         bloatingMethod=data['bloatingMethod'],
         kvalue=data['kvalue'],
     )

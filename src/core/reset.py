@@ -4,208 +4,206 @@ This file contains reset class for DryVR
 
 import sympy
 
-from sympy.solvers import solve
 from src.common.utils import randomPoint
 
-class Reset():
-	"""
+
+class Reset:
+    """
     This is class for resetting the initial set
     """
-	def __init__(self, variables):
-		"""
-		Reset class initialization function.
+
+    def __init__(self, variables):
+        """
+        Reset class initialization function.
 
         Args:
             variables (list): list of varibale name
         """
-		self.variables = variables
+        self.variables = variables
 
-	def resetSet(self, rawEqus, lowerBound, upperBound):
-		"""
-		Reset the initial set based on reset expressions
+    def reset_set(self, raw_eqs_str, lower_bound, upper_bound):
+        """
+        Reset the initial set based on reset expressions
 
         Args:
-            rawEqus (list): list of reset expression
-            lowerBound (list): lower bound of the initial set
-            upperBound (list): upper bound of the initial set
+            raw_eqs_str (str): reset expressions separated by ';'
+            lower_bound (list): lower bound of the initial set
+            upper_bound (list): upper bound of the initial set
 
         Returns:
             lower bound and upper bound of the initial set after reset
         """
-		if not rawEqus:
-			return lowerBound, upperBound
+        if not raw_eqs_str:
+            return lower_bound, upper_bound
 
-		rawEqus = rawEqus.split(';')
-		lbList = []
-		ubList = []
-		for rawEqu in rawEqus:
-			lb, ub = self._handleReset(rawEqu, lowerBound, upperBound)
-			lbList.append(lb)
-			ubList.append(ub)
+        raw_eqs = raw_eqs_str.split(';')
+        lb_list = []
+        ub_list = []
+        for rawEqu in raw_eqs:
+            lb, ub = self._handle_reset(rawEqu, lower_bound, upper_bound)
+            lb_list.append(lb)
+            ub_list.append(ub)
 
-		return self._mergeResult(lbList, ubList, lowerBound, upperBound)
+        return self._merge_result(lb_list, ub_list, lower_bound, upper_bound)
 
-
-	def resetPoint(self, rawEqus, point):
-		"""
-		Reset the initial point based on reset expressions
+    def reset_point(self, raw_eqs_str, point):
+        """
+        Reset the initial point based on reset expressions
 
         Args:
-            rawEqus (list): list of reset expression
+            raw_eqs_str (str): list of reset expression
             point (list): the initial point need to be reset
 
         Returns:
             a point after reset
         """
-		if point == [] or not point:
-			return point
-		lower, upper = self.resetSet(rawEqus, point, point)
-		return randomPoint(lower, upper)
+        if point == [] or not point:
+            return point
+        lower, upper = self.reset_set(raw_eqs_str, point, point)
+        return randomPoint(lower, upper)
 
-	def _mergeResult(self, lbList, ubList, lowerBound, upperBound):
-		"""
-		Merge the a list of reset result
-		Since we allow multiple reset per transition,
-		we get list of reset result, each result corresponding to one reset expression
-		We need to merge all reset result together
+    @staticmethod
+    def _merge_result(lb_list, ub_list, lower_bound, upper_bound):
+        """
+        Merge the a list of reset result
+        Since we allow multiple reset per transition,
+        we get list of reset result, each result corresponding to one reset expression
+        We need to merge all reset result together
 
         Args:
-            lbList (list): list of reset lowerbound results
-            ubList (list): list of reset upperbound results
-            lowerBound(list): original lowerbound
-			upperBound(list): original upperbound
+            lb_list (list): list of reset lower bound results
+            ub_list (list): list of reset upper bound results
+            lower_bound(list): original lower bound
+            upper_bound(list): original upper bound
 
         Returns:
-            Upperbound and lowerbound after merge the reset result
+            Upper bound and lower bound after merge the reset result
         """
-		retLb = list(lowerBound)
-		retUb = list(upperBound)
+        ret_lb = list(lower_bound)
+        ret_ub = list(upper_bound)
 
-		for i in range(len(lbList)):
-			curLb = lbList[i]
-			curUb = ubList[i]
-			for j in range(len(curLb)):
-				if curLb[j]!=lowerBound[j]:
-					retLb[j] = curLb[j]
-				if curUb[j]!=upperBound[j]:
-					retUb[j] = curUb[j]
-		return retLb, retUb
+        for i in range(len(lb_list)):
+            cur_lb = lb_list[i]
+            cur_ub = ub_list[i]
+            for j in range(len(cur_lb)):
+                if cur_lb[j] != lower_bound[j]:
+                    ret_lb[j] = cur_lb[j]
+                if cur_ub[j] != upper_bound[j]:
+                    ret_ub[j] = cur_ub[j]
+        return ret_lb, ret_ub
 
-	def _buildAllCombo(self, symbols, lowerBound, upperBound):
-		"""
-		This function allows us to build all combination given symbols
-		For example, if we have a 2-dimension set for dim A and B.
-		symbols = [A,B]
-		lowerBound = [1.0, 2.0]
-		upperBound = [3.0, 4.0]
-		Then the result shold be all possible combination of the value of A and B
-		result:
-			[[1.0, 2.0], [3.0, 4.0], [3.0, 2.0], [1.0, 4.0]] 
+    def _build_all_combo(self, symbols, lower_bound, upper_bound):
+        """
+        This function allows us to build all combination given symbols
+        For example, if we have a 2-dimension set for dim A and B.
+        symbols = [A,B]
+        lowerBound = [1.0, 2.0]
+        upperBound = [3.0, 4.0]
+        Then the result should be all possible combination of the value of A and B
+        result:
+            [[1.0, 2.0], [3.0, 4.0], [3.0, 2.0], [1.0, 4.0]]
 
         Args:
             symbols (list): symbols we use to create combo
-            lowerBound (list): lowerbound of the set
-			upperBound (list): upperbound of the set
+            lower_bound (list): lower bound of the set
+            upper_bound (list): upper bound of the set
 
         Returns:
             List of combination value
         """
-		if not symbols:
-			return []
+        if not symbols:
+            return []
 
-		curSymbol = str(symbols[0])
-		idx = self.variables.index(curSymbol)
-		lo = lowerBound[idx]
-		up = upperBound[idx]
-		ret = []
-		nextLevel = self._buildAllCombo(symbols[1:], lowerBound, upperBound)
-		if nextLevel:
-			for n in nextLevel:
-				ret.append(n+[(curSymbol, lo)])
-				ret.append(n+[(curSymbol, up)])
-		else:
-			ret.append([curSymbol, lo])
-			ret.append([curSymbol, up])
-		return ret
+        cur_symbol = str(symbols[0])
+        idx = self.variables.index(cur_symbol)
+        lo = lower_bound[idx]
+        up = upper_bound[idx]
+        ret = []
+        next_level = self._build_all_combo(symbols[1:], lower_bound, upper_bound)
+        if next_level:
+            for n in next_level:
+                ret.append(n + [(cur_symbol, lo)])
+                ret.append(n + [(cur_symbol, up)])
+        else:
+            ret.append([cur_symbol, lo])
+            ret.append([cur_symbol, up])
+        return ret
 
-
-	def _handleWrappedReset(self, rawEqu, lowerBound, upperBound):
-		"""
-		This is a function to handle reset such as V = [0, V+1]
+    def _handle_wrapped_reset(self, raw_eq, lower_bound, upper_bound):
+        """
+        This is a function to handle reset such as V = [0, V+1]
 
         Args:
-            rawEqu (str): reset equation
-            lowerBound (list): lowerbound of the set
-			upperBound (list): upperbound of the set
+            raw_eq (str): reset equation
+            lower_bound (list): lower bound of the set
+            upper_bound (list): upper bound of the set
 
         Returns:
-            Upperbound and lowerbound after the reset
+            Upper bound and lower bound after the reset
         """
-		finalEqu = sympy.sympify(rawEqu)
-		rhsSymbols = list(finalEqu.free_symbols)
-		combos = self._buildAllCombo(rhsSymbols, lowerBound, upperBound)
-		minReset = float('inf')
-		maxReset = float('-inf')
-		if combos:
-			for combo in combos:
-				if len(combo) == 2:
-					result = float(finalEqu.subs(combo[0], combo[1]))
-				else:
-					result = float(finalEqu.subs(combo))
-				minReset = min(minReset, float(result))
-				maxReset = max(maxReset, float(result))
-		else:
-			minReset = float(finalEqu)
-			maxReset = float(finalEqu)
-		return (minReset, maxReset)
+        final_equ = sympy.sympify(raw_eq)
+        rhs_symbols = list(final_equ.free_symbols)
+        combos = self._build_all_combo(rhs_symbols, lower_bound, upper_bound)
+        min_reset = float('inf')
+        max_reset = float('-inf')
+        if combos:
+            for combo in combos:
+                if len(combo) == 2:
+                    result = float(final_equ.subs(combo[0], combo[1]))
+                else:
+                    result = float(final_equ.subs(combo))
+                min_reset = min(min_reset, float(result))
+                max_reset = max(max_reset, float(result))
+        else:
+            min_reset = float(final_equ)
+            max_reset = float(final_equ)
+        return (min_reset, max_reset)
 
-
-
-	def _handleReset(self, rawEqu, lowerBound, upperBound):
-		"""
-		Handle the reset with single reset expression
+    def _handle_reset(self, raw_equ, lower_bound, upper_bound):
+        """
+        Handle the reset with single reset expression
 
         Args:
-            rawEqu (str): reset equation
-            lowerBound (list): lowerbound of the set
-			upperBound (list): upperbound of the set
+            raw_equ (str): reset equation
+            lower_bound (list): lower bound of the set
+            upper_bound (list): upper bound of the set
 
         Returns:
-            Upperbound and lowerbound after the reset
+            Upper bound and lower bound after the reset
         """
-		equSplit = rawEqu.split('=')
-		lhs, rhs = equSplit[0], equSplit[1]
-		target = sympy.sympify(lhs)
-		# Construct the equation
-		finalEqu = sympy.sympify(rhs)
-		if not isinstance(finalEqu, list):
-			rhsSymbols = list(sympy.sympify(rhs).free_symbols)
-		else:
-			rhsSymbols = None
-		# print target, rhsSymbols
-		combos = self._buildAllCombo(rhsSymbols, lowerBound, upperBound)
-		# finalEqu = solve(equ, target)[0]
+        equ_split = raw_equ.split('=')
+        lhs, rhs = equ_split[0], equ_split[1]
+        target = sympy.sympify(lhs)
+        # Construct the equation
+        final_equ = sympy.sympify(rhs)
+        if not isinstance(final_equ, list):
+            rhs_symbols = list(sympy.sympify(rhs).free_symbols)
+        else:
+            rhs_symbols = None
+        # print target, rhs_symbols
+        combos = self._build_all_combo(rhs_symbols, lower_bound, upper_bound)
+        # final_equ = solve(equ, target)[0]
 
-		minReset = float('inf')
-		maxReset = float('-inf')
-		if combos:
-			for combo in combos:
-				if len(combo) == 2:
-					result = float(finalEqu.subs(combo[0], combo[1]))
-				else:
-					result = float(finalEqu.subs(combo))
-				minReset = min(minReset, float(result))
-				maxReset = max(maxReset, float(result))
-		elif isinstance(finalEqu, list):
-			minReset = min(self._handleWrappedReset(finalEqu[0], lowerBound, upperBound))
-			maxReset = max(self._handleWrappedReset(finalEqu[1], lowerBound, upperBound))
-		else:
-			minReset = float(finalEqu)
-			maxReset = float(finalEqu)
+        min_reset = float('inf')
+        max_reset = float('-inf')
+        if combos:
+            for combo in combos:
+                if len(combo) == 2:
+                    result = float(final_equ.subs(combo[0], combo[1]))
+                else:
+                    result = float(final_equ.subs(combo))
+                min_reset = min(min_reset, float(result))
+                max_reset = max(max_reset, float(result))
+        elif isinstance(final_equ, list):
+            min_reset = min(self._handle_wrapped_reset(final_equ[0], lower_bound, upper_bound))
+            max_reset = max(self._handle_wrapped_reset(final_equ[1], lower_bound, upper_bound))
+        else:
+            min_reset = float(final_equ)
+            max_reset = float(final_equ)
 
-		retLb = list(lowerBound)
-		retUb = list(upperBound)
-		targetIdx = self.variables.index(str(target))
-		retLb[targetIdx] = minReset
-		retUb[targetIdx] = maxReset
-		return retLb, retUb
+        ret_lb = list(lower_bound)
+        ret_ub = list(upper_bound)
+        target_idx = self.variables.index(str(target))
+        ret_lb[target_idx] = min_reset
+        ret_ub[target_idx] = max_reset
+        return ret_lb, ret_ub

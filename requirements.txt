@@ -1,0 +1,11 @@
+pycairo
+pygraphviz
+glpk
+networkx
+python-igraph
+matplotlib
+numpy
+scipy
+sympy
+z3-solver
+six
