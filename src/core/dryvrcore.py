@@ -5,14 +5,14 @@ from __future__ import print_function
 import random
 
 import networkx as nx
-import numpy
+import numpy as np
 import igraph
+
 
 from src.common.constant import *
 from src.common.io import writeReachTubeFile
 from src.common.utils import randomPoint, calcDelta, calcCenterPoint, trimTraces
-from src.discrepancy.Global_Disc import *
-from src.discrepancy.PW_Discrepancy import PW_Bloat_to_tube
+from src.discrepancy.Global_Disc import get_reachtube_segment
 
 
 def build_graph(vertex, edge, guards, resets):
@@ -176,7 +176,7 @@ def simulate(g, init_condition, time_horizon, guard, sim_func, reset, init_verte
         cur_label = g.vs[cur_vertex]['label']
 
         cur_sim_result = sim_func(cur_label, init_condition, transit_time)
-        if isinstance(cur_sim_result, numpy.ndarray):
+        if isinstance(cur_sim_result, np.ndarray):
             cur_sim_result = cur_sim_result.tolist()
 
         if len(cur_successors) == 0:
@@ -288,16 +288,12 @@ def calc_bloated_tube(
             traces[i] = traces[i][:max_idx]
 
     if bloating_method == GLOBAL:
-        if BLOATDEBUG:
-            k, gamma = Global_Discrepancy(mode_label, cur_delta, 1, PLOTDIM, traces)
-        else:
-            k, gamma = Global_Discrepancy(mode_label, cur_delta, 0, PLOTDIM, traces)
-        cur_reach_tube = bloatToTube(mode_label, k, gamma, cur_delta, traces)
+        cur_reach_tube: np.ndarray = get_reachtube_segment(np.array(traces), np.array(cur_delta), "PWGlobal")
     elif bloating_method == PW:
-        if BLOATDEBUG:
-            cur_reach_tube = PW_Bloat_to_tube(cur_delta, 1, PLOTDIM, traces, kvalue)
-        else:
-            cur_reach_tube = PW_Bloat_to_tube(cur_delta, 0, PLOTDIM, traces, kvalue)
+        cur_reach_tube: np.ndarray = get_reachtube_segment(np.array(traces), np.array(cur_delta), "PW")
     else:
         raise ValueError("Unsupported bloating method '" + bloating_method + "'")
-    return cur_reach_tube
+    final_tube = np.zeros((cur_reach_tube.shape[0]*2, cur_reach_tube.shape[2]))
+    final_tube[0::2, :] = cur_reach_tube[:, 0, :]
+    final_tube[1::2, :] = cur_reach_tube[:, 1, :]
+    return final_tube.tolist()

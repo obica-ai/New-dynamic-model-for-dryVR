@@ -2,314 +2,141 @@
 This file contains core bloating algorithm for dryvr
 """
 
-from numpy import log, exp
-
-import glpk
+import pdb
+from typing import List, Tuple
 import numpy as np
+import scipy as sp
+import scipy.spatial
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 
-# TODO Remove Global vars
-dimensions = 0
-dimensions_nt = 0
-trace_len = 0
-start_time = 0.0
-end_time = 0.0
-n = 100
+_TRUE_MIN_CONST = -10
+_EPSILON = 1.0e-100
 
 
-def read_data(traces):
-    """ Read in all the traces """
-
-    global dimensions
-    global dimensions_nt
-    global trace_len
-    global start_time
-    global end_time
-
-    # Locals
-    trace = traces[0]
-    error_thred_time = 1e-6
-
-    # Calculate variables
-    dimensions = len(trace[0])
-    dimensions_nt = dimensions - 1
-
-    end_time = trace[-1][0]
-
-    # Align all the traces
-    for i in range(len(traces)):
-        initial_time = traces[i][0][0]
-        for j in range(len(traces[i])):
-            traces[i][j][0] = traces[i][j][0] - initial_time
-
-    # reassign the start time and end time
-    start_time = 0
-    for i in range(len(traces)):
-        end_time = min(end_time, traces[i][-1][0])
-
-    # trim all the points after the end time
-    traces_trim = []
-    for i in range(len(traces)):
-        trace_trim = []
-        for j in range(len(traces[i])):
-            if traces[i][j][0] <= end_time + error_thred_time:
-                trace_trim.append(traces[i][j])
-        traces_trim.append(trace_trim)
-
-    # reassign trace_len
-    trace_len = len(trace_trim)
-
-    return traces_trim
-
-
-def A_calc(traces):
-    global trace_len
-    trace = traces[0]
-    A = []
-    for i in range(trace_len - 1):
-        A.append([-1, -(trace[i + 1][0] - trace[0][0])])  # [-1, -(t(i+1)-t0)]
-
-    return A
-
-
-def b_calc(traces, dim, init_delta):
-    global trace_len
-    global num_traces
-
-    b = []
-
-    # check traces number; if too few traces, give up
-    num_traces = len(traces)
-    if num_traces < 3:
-        print("Only have " + str(num_traces - 1) + " sample traces! Give up!")
-        return None
-
-    # compute b matrix
-    for i in range(trace_len - 1):  # t = t(i+1)
-        maxval = -float('Inf')
-
-        # select any of the two traces and compute their difference in value at t(i+1)
-        for j in range(num_traces):
-            for k in range(j + 1, num_traces):
-                trace1 = traces[j]
-                trace2 = traces[k]
-                if abs(trace1[0][dim] - trace2[0][dim]) <= 1e-3:
-                    # print("Same trace detected! Algorithm stops!")
-                    # print("These two traces are the same trace:")
-                    # print("trace",j)
-                    # print("trace",k)
-                    return 'Same_trace!'
-                if trace1[i + 1][dim] - trace2[i + 1][dim] == 0:
-                    val = -float('Inf')
-                else:
-                    val = log(abs(trace1[i + 1][dim] - trace2[i + 1][dim])) - log(abs(trace1[0][dim] - trace2[0][dim]))
-                if val > maxval:
-                    maxval = val
-        b.append(-maxval)
-
-    return b
-
-
-def c_calc(traces):
-    global start_time
-    global end_time
-    global n
-    c = [n, (n + 1) / 2 * (end_time - start_time)]  # (1/n + 2/n + ... + 1)*(T-t0)
-
-    return c
-
-
-def k_gamma_calc(A, b, c):
-    # use scipy.optimize.linprog
-    """
-    from scipy.optimize import linprog
-    k_bounds = (0, None)    # k >= 1, i.e. log(k) >= 0
-    gamma_bounds = (None, None)
-    res = linprog(c, A_ub=A, b_ub=b, bounds=(k_bounds, gamma_bounds))
-    k = exp(res.x[0])
-    gamma = res.x[1]
-    """
-
-    # use glpk
-
-    lp = glpk.LPX()
-    lp.name = 'logk_gamma'
-    lp.obj.maximize = False  # set this as a minimization problem
-    lp.rows.add(len(A))  # append rows to this instance
-    for i in range(len(b)):
-        lp.rows[i].bounds = None, b[i]  # set bound: entry <= b[i]
-    lp.cols.add(2)  # append two columns for k and gamma to this instance
-    lp.cols[0].name = 'logk'
-    lp.cols[0].bounds = 0.01, 10.0  # k >= 1, i.e. log(k) >= 0
-    lp.cols[1].name = 'gamma'
-    lp.cols[1].bounds = None, None  # no constraints for gamma
-    lp.obj[:] = c  # set objective coefficients
-    lp.matrix = np.ravel(A)  # set constraint matrix; convert A to 1-d array
-    lp.simplex()  # solve this LP with the simplex method
-    k = exp(lp.cols[0].primal)
-    gamma = lp.cols[1].primal
-
-    return k, gamma
-
-
-def Global_Discrepancy(mode, init_delta_array, plot_flag, plot_dim, traces):
-    global dimensions
-    read_data(traces)
-
-    # The returned value
-    k_values = []
-    gamma_values = []
-
-    for dim in range(1, dimensions):
-        init_delta = init_delta_array[dim - 1]
-        A = A_calc(traces)
-        if b_calc(traces, dim, init_delta) == 'Same_trace!':
-            # print('Same initial condition detected for dimension %d, using default value' % (dim))
-            k = 1
-            gamma = 0
-        else:
-            b = b_calc(traces, dim, init_delta)
-            c = c_calc(traces)
-            # print("finish coefficients")
-            if b is None:
-                print("Error!")
+def get_reachtube_segment(training_traces: np.ndarray, initial_radii: np.ndarray, method='PWGlobal') -> np.array:
+    num_traces: int = training_traces.shape[0]
+    ndims: int = training_traces.shape[2]  # This includes time
+    trace_len: int = training_traces.shape[1]
+    center_trace: np.ndarray = training_traces[0, :, :]
+    trace_initial_time = center_trace[0, 0]
+    x_points: np.ndarray = center_trace[:, 0] - trace_initial_time
+    assert np.all(training_traces[0, :, 0] == training_traces[1:, :, 0])
+    y_points: np.ndarray = all_sensitivities_calc(training_traces, initial_radii)
+    points: np.ndarray = np.zeros((ndims - 1, trace_len, 2))
+    points[np.where(initial_radii != 0), 0, 1] = 1.0
+    points[:, :, 0] = np.reshape(x_points, (1, x_points.shape[0]))
+    points[:, 1:, 1] = y_points
+    normalizing_initial_set_radii: np.ndarray = initial_radii.copy()
+    normalizing_initial_set_radii[np.where(normalizing_initial_set_radii == 0)] = 1.0
+    df: np.ndarray = np.zeros((trace_len, ndims))
+    if method == 'PW':
+        df[:, 1:] = np.transpose(
+            points[:, :, 1] * np.reshape(normalizing_initial_set_radii, (normalizing_initial_set_radii.size, 1)))
+    elif method == 'PWGlobal':
+        # replace zeros with epsilons
+        # points[np.where(points[:, 0, 1] == 0), 0, 1] = 1.0e-100
+        # to fit exponentials make y axis log of sensitivity
+        points[:, :, 1] = np.maximum(points[:, :, 1], _EPSILON)
+        points[:, :, 1] = np.log(points[:, :, 1])
+        for dim_ind in range(1, ndims):
+            new_min = min(np.min(points[dim_ind - 1, 1:, 1]) + _TRUE_MIN_CONST, -10)
+            if initial_radii[dim_ind - 1] == 0:
+                # exclude initial set, then add true minimum points
+                new_points: np.ndarray = np.row_stack(
+                    (np.array((points[dim_ind - 1, 1, 0], new_min)), np.array((points[dim_ind - 1, -1, 0], new_min))))
             else:
-                k, gamma = k_gamma_calc(A, b, c)
-                # print("k =",k)
-                # print("gamma =",gamma)
-        k_values.append(k)
-        gamma_values.append(gamma)
+                # start from zero, then add true minimum points
+                new_points: np.ndarray = np.row_stack((points[dim_ind - 1, 0, :],
+                                                       np.array((points[dim_ind - 1, 0, 0], new_min)),
+                                                       np.array((points[dim_ind - 1, -1, 0], new_min))))
+                df[0, dim_ind] = initial_radii[dim_ind - 1]
+                # Tuple order is start_time, end_time, slope, y-intercept
+            cur_dim_points = np.concatenate((points[dim_ind - 1, 1:, :], new_points), axis=0)
+            cur_hull: sp.spatial.ConvexHull = sp.spatial.ConvexHull(cur_dim_points)
+            linear_separators: List[Tuple[float, float, float, float, int, int]] = []
+            vert_inds = list(zip(cur_hull.vertices[:-1], cur_hull.vertices[1:]))
+            vert_inds.append((cur_hull.vertices[-1], cur_hull.vertices[0]))
+            for end_ind, start_ind in vert_inds:
+                if cur_dim_points[start_ind, 1] != new_min and cur_dim_points[end_ind, 1] != new_min:
+                    slope = (cur_dim_points[end_ind, 1] - cur_dim_points[start_ind, 1]) / (
+                                cur_dim_points[end_ind, 0] - cur_dim_points[start_ind, 0])
+                    y_intercept = cur_dim_points[start_ind, 1] - cur_dim_points[start_ind, 0] * slope
+                    start_time = cur_dim_points[start_ind, 0]
+                    end_time = cur_dim_points[end_ind, 0]
+                    assert start_time < end_time
+                    if start_time == 0:
+                        linear_separators.append((start_time, end_time, slope, y_intercept, 0, end_ind + 1))
+                    else:
+                        linear_separators.append((start_time, end_time, slope, y_intercept, start_ind + 1, end_ind + 1))
+            linear_separators.sort()
+            prev_val = 0
+            prev_ind = 1 if initial_radii[dim_ind - 1] == 0 else 0
+            for linear_separator in linear_separators:
+                _, _, slope, y_intercept, start_ind, end_ind = linear_separator
+                assert prev_ind == start_ind
+                assert start_ind < end_ind
+                segment_t = center_trace[start_ind:end_ind + 1, 0]
+                segment_df = normalizing_initial_set_radii[dim_ind - 1] * np.exp(y_intercept) * np.exp(
+                    slope * segment_t)
+                segment_df[0] = max(segment_df[0], prev_val)
+                df[start_ind:end_ind + 1, dim_ind] = segment_df
+                prev_val = segment_df[-1]
+                prev_ind = end_ind
+    else:
+        print('Discrepancy computation method,', method, ', is not supported!')
+        raise ValueError
+    assert (np.all(df >= 0))
+    reachtube_segment: np.ndarray = np.zeros((trace_len - 1, 2, ndims))
+    reachtube_segment[:, 0, :] = np.minimum(center_trace[1:, :] - df[1:, :], center_trace[:-1, :] - df[:-1, :])
+    reachtube_segment[:, 1, :] = np.maximum(center_trace[1:, :] + df[1:, :], center_trace[:-1, :] + df[:-1, :])
+    # assert 100% training accuracy (all trajectories are contained)
+    for trace_ind in range(training_traces.shape[0]):
+        if not (np.all(reachtube_segment[:, 0, :] <= training_traces[trace_ind, 1:, :]) and np.all(reachtube_segment[:, 1, :] >= training_traces[trace_ind, 1:, :])):
+            assert np.any(np.abs(training_traces[trace_ind, 0, 1:]-center_trace[0, 1:]) > initial_radii)
+            print(f"Warning: Trace #{trace_ind}", "of this initial set is sampled outside of the initial set because of floating point error and is not contained in the initial set")
+    return reachtube_segment
 
-    # plot results
-    if plot_flag:
-        k = k_values[plot_dim - 1]
-        gamma = gamma_values[plot_dim - 1]
-        init_delta = init_delta_array[plot_dim - 1]
-        center_trace = traces[0]
-        minval = float('Inf')
-        maxval = -float('Inf')
-        # compute reach tube upper/lower bound point-by-point
-        upper_bound_trace = [center_trace[0][plot_dim] + init_delta]
-        lower_bound_trace = [center_trace[0][plot_dim] - init_delta]
-        for i in range(trace_len - 1):
-            time_interval = center_trace[i + 1][0] - center_trace[0][0]  # time_interval = t(i+1) - t0
-            delta = k * exp(gamma * time_interval) * init_delta
-            upper_bound_trace.append(center_trace[i + 1][plot_dim] + delta)
-            lower_bound_trace.append(center_trace[i + 1][plot_dim] - delta)
 
-        center_trace = traces[0]
-        time = [row[0] for row in center_trace]
-        plt.plot(time, [row[plot_dim] for row in center_trace], '-r', label="center trace")  # center trace in color red
-        for i in range(1, num_traces):
-            trace = traces[i]
-            plt.plot(time, [row[plot_dim] for row in trace], '-b')  # other traces in color blue
-        plt.plot(time, upper_bound_trace, '-y', label="reach tube bound")  # upper bound trace in color yellow
-        plt.plot(time, lower_bound_trace, '-y')  # lower bound trace in color yellow
-        plt.title("k = " + str(k) + "; gamma = " + str(gamma))
-        plt.legend()
+def all_sensitivities_calc(training_traces: np.ndarray, initial_radii: np.ndarray):
+    num_traces: int
+    trace_len: int
+    ndims: int
+    num_traces, trace_len, ndims = training_traces.shape
+    normalizing_initial_set_radii: np.array = initial_radii.copy()
+    y_points: np.array = np.zeros((normalizing_initial_set_radii.shape[0], trace_len - 1))
+    normalizing_initial_set_radii[np.where(normalizing_initial_set_radii == 0)] = 1.0
+    for cur_dim_ind in range(1, ndims):
+        normalized_initial_points: np.array = training_traces[:, 0, 1:] / normalizing_initial_set_radii
+        initial_distances = sp.spatial.distance.pdist(normalized_initial_points, 'chebyshev')
+        for cur_time_ind in range(1, trace_len):
+            y_points[cur_dim_ind - 1, cur_time_ind - 1] = np.max((sp.spatial.distance.pdist(
+                np.reshape(training_traces[:, cur_time_ind, cur_dim_ind],
+                           (training_traces.shape[0], 1)), 'chebychev')
+                                                                  / normalizing_initial_set_radii[
+                                                                      cur_dim_ind - 1]) / initial_distances)
+    return y_points
+
+def plot_rtsegment_and_traces(rtsegment: np.ndarray, traces: np.ndarray):
+    for dim_ind in range(1, traces.shape[2]):
+        fig, ax = plt.subplots(1)
+        facecolor = 'r'
+        for trace_ind in range(traces.shape[0]):
+            ax.plot(traces[trace_ind, :, 0], traces[trace_ind, :, dim_ind])
+        for hrect_ind in range(rtsegment.shape[0]):
+            ax.add_patch(Rectangle((rtsegment[hrect_ind, 0, 0], rtsegment[hrect_ind, 0, dim_ind]), rtsegment[hrect_ind, 1, 0]-rtsegment[hrect_ind, 0, 0],
+                                            rtsegment[hrect_ind, 1, dim_ind] - rtsegment[hrect_ind, 0, dim_ind], alpha=0.1, facecolor='r'))
+        ax.set_title(f'dim #{dim_ind}')
+        fig.canvas.draw()
         plt.show()
-        plt.savefig('books_read.png')
-    return k_values, gamma_values
 
 
-def Bloat_to_tube(mode, k, gamma, init_delta_array, write_path, write_type, concat_time, traces):
-    global dimensions
-    read_data(traces)
-    center_trace = traces[0]
-    reach_tube = []
-    time_lower = concat_time[0]
-    time_upper = concat_time[1]
-
-    # Compute the reach_tube
-    for i in range(trace_len - 1):
-        time_interval = center_trace[i + 1][0] - center_trace[0][0]  # time_interval = t(i+1) - t0
-        lower_rec = [center_trace[i][0]]
-        upper_rec = [center_trace[i + 1][0]]
-        for dim in range(1, dimensions):
-            delta = k[dim - 1] * exp(gamma[dim - 1] * time_interval) * init_delta_array[dim - 1]
-            upper_rec.append(max(center_trace[i + 1][dim], center_trace[i][dim]) + delta)
-            lower_rec.append(min(center_trace[i + 1][dim], center_trace[i][dim]) - delta)
-        lower_rec.append(lower_rec[0] + time_lower)
-        upper_rec.append(upper_rec[0] + time_upper)
-        reach_tube.append(lower_rec)
-        reach_tube.append(upper_rec)
-
-    if write_type == 'new':
-        with open(write_path, 'w') as write_file:
-            write_file.write(mode + '\n')
-            for i in range(len(reach_tube)):
-                for j in range(len(reach_tube[0])):
-                    write_file.write(str(reach_tube[i][j]) + ' ')
-                write_file.write('\n')
-    elif write_type == 'append':
-        with open(write_path, 'a') as write_file:
-            for i in range(len(reach_tube)):
-                for j in range(len(reach_tube[0])):
-                    write_file.write(str(reach_tube[i][j]) + ' ')
-                write_file.write('\n')
-    else:
-        print('writing type wrong!')
-    return reach_tube
+if __name__=="__main__":
+    with open("test.npy", "rb") as f:
+        training_traces = np.load(f)
+    initial_radii = np.array([1.96620653e-06, 2.99999995e+00, 3.07000514e-07, 8.84958773e-13, 1.05625786e-16, 3.72500000e+00, 0.00000000e+00, 0.00000000e+00])
+    result = get_reachtube_segment(training_traces, initial_radii, method='PWGlobal')
+    print(training_traces.dtype)
+    plot_rtsegment_and_traces(result, training_traces[np.array((0, 6))])
 
 
-def writeTraceToFile(mode, reach_tube, write_path, write_type):
-    if write_type == 'new':
-        with open(write_path, 'w') as write_file:
-            write_file.write(mode + '\n')
-            for i in range(len(reach_tube)):
-                for j in range(len(reach_tube[0])):
-                    write_file.write(str(reach_tube[i][j]) + ' ')
-                write_file.write('\n')
-    elif write_type == 'append':
-        with open(write_path, 'a') as write_file:
-            for i in range(len(reach_tube)):
-                for j in range(len(reach_tube[0])):
-                    write_file.write(str(reach_tube[i][j]) + ' ')
-                write_file.write('\n')
-    else:
-        print('writing type wrong!')
-    return reach_tube
-
-
-def Bloat_to_tubeNoIO(mode, k, gamma, init_delta_array, concat_time, traces):
-    global dimensions
-    read_data(traces)
-    center_trace = traces[0]
-    reach_tube = []
-    time_lower = concat_time[0]
-    time_upper = concat_time[1]
-
-    for i in range(trace_len - 1):
-        time_interval = center_trace[i + 1][0] - center_trace[0][0]
-        lower_rec = [center_trace[i][0]]
-        upper_rec = [center_trace[i + 1][0]]
-
-        for dim in range(1, dimensions):
-            delta = k[dim - 1] * exp(gamma[dim - 1] * time_interval) * init_delta_array[dim - 1]
-            upper_rec.append(max(center_trace[i + 1][dim], center_trace[i][dim]) + delta)
-            lower_rec.append(min(center_trace[i + 1][dim], center_trace[i][dim]) - delta)
-        lower_rec.append(lower_rec[0] + time_lower)
-        upper_rec.append(upper_rec[0] + time_upper)
-        reach_tube.append(lower_rec)
-        reach_tube.append(upper_rec)
-    return reach_tube
-
-
-def bloatToTube(mode, k, gamma, init_delta_array, traces):
-    global dimensions
-    read_data(traces)
-    center_trace = traces[0]
-    reach_tube = []
-
-    for i in range(trace_len - 1):
-        time_interval = center_trace[i + 1][0] - center_trace[0][0]
-        lower_rec = [center_trace[i][0]]
-        upper_rec = [center_trace[i + 1][0]]
-
-        for dim in range(1, dimensions):
-            delta = k[dim - 1] * exp(gamma[dim - 1] * time_interval) * init_delta_array[dim - 1]
-            upper_rec.append(max(center_trace[i + 1][dim], center_trace[i][dim]) + delta)
-            lower_rec.append(min(center_trace[i + 1][dim], center_trace[i][dim]) - delta)
-        reach_tube.append(lower_rec)
-        reach_tube.append(upper_rec)
-    return reach_tube

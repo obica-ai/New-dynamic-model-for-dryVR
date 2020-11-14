@@ -157,7 +157,6 @@ class Guard:
             for symbol in symbols:
                 cur_solver.add(self.varDic[symbol] >= lower_bound[symbols[symbol]])
                 cur_solver.add(self.varDic[symbol] <= upper_bound[symbols[symbol]])
-
             if cur_solver.check() == sat:
                 # The reachtube hits the guard
                 cur_solver.pop()
