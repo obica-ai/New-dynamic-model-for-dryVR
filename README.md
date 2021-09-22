@@ -2,11 +2,12 @@ DryVR 2.0 is a software tool for verifying cyber-physical and autonomoous system
 
 <img src="figures/dryvrmodel.png" style="float: left; margin-right: 10px;" />
 
-Please note that there are three branches: master: it is based on Python 2.7 and supports hybrid models; symmetries: it is the modification of the master branch created to support symmetry-based acceleration for reachtube computations created for this ATVA 2019 paper: "Using symmetry transformations in equivariant dynamical systems for their safety verification" by Hussein Sibai, Navid Mokhlesi, and Sayan Mitra, however it does not support hybrid models; dryvr3: it is a Python 3.6 version of the master branch which support all features of DryVR 2.0.
+The white-box transition system is specified as a JSON file and the black-box simulator can be written in any language. DryVR uses PAC-learning to learn a sensitivity function for the black-box and combines that with reachanbility analysis on the transition graph. The tool has been used to verify ground and aeiral vehicle models in complex scenarios. You can find more detailed documentation and usages from (this)[https://dryvr.readthedocs.io/en/latest/publications.html] page. 
 
-Please find the documentation at 
 
-http://dryvr-02.readthedocs.io/en/latest/
+Note that there are three branches: master: it is based on Python 2.7 and supports hybrid models; symmetries: it is the modification of the master branch created to support symmetry-based acceleration for reachtube computations created for this ATVA 2019 paper: "Using symmetry transformations in equivariant dynamical systems for their safety verification" by Hussein Sibai, Navid Mokhlesi, and Sayan Mitra, however it does not support hybrid models; dryvr3: it is a Python 3.6 version of the master branch which support all features of DryVR 2.0.
+
+
 
 
 Installation
