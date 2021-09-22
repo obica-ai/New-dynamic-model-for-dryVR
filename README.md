@@ -1,5 +1,6 @@
-DryVR 2.0 is a software tool for verifying hybrid systems. It supports reachability analysis of _gray-box_ systems,
-that is, systems that are described in part as a transition system and in part as a black-box simulator.
+DryVR 2.0 is a software tool for verifying cyber-physical and autonomoous systems. A key feature of DryVR is that it supports reachability analysis of _gray-box_ systems, that is, systems that are described in part as a white box transition system or a program and in part as a black-box simulator as shown in the figure below.
+
+![DryVR view](figures/dryvr-model.png)
 
 Please note that there are three branches: master: it is based on Python 2.7 and supports hybrid models; symmetries: it is the modification of the master branch created to support symmetry-based acceleration for reachtube computations created for this ATVA 2019 paper: "Using symmetry transformations in equivariant dynamical systems for their safety verification" by Hussein Sibai, Navid Mokhlesi, and Sayan Mitra, however it does not support hybrid models; dryvr3: it is a Python 3.6 version of the master branch which support all features of DryVR 2.0.
 
