@@ -5,40 +5,22 @@ DryVR 2.0 is a software tool for verifying cyber-physical and autonomoous system
 The white-box transition system is specified as a JSON file and the black-box simulator can be written in any language. DryVR uses PAC-learning to learn a sensitivity function for the black-box and combines that with reachanbility analysis on the transition graph. The tool has been used to verify ground and aeiral vehicle models in complex scenarios. You can find more detailed documentation and usages from [this page](https://dryvr.readthedocs.io/en/latest/publications.html). 
 
 
-Note that there are three branches: master: it is based on Python 2.7 and supports hybrid models; symmetries: it is the modification of the master branch created to support symmetry-based acceleration for reachtube computations created for this ATVA 2019 paper: "Using symmetry transformations in equivariant dynamical systems for their safety verification" by Hussein Sibai, Navid Mokhlesi, and Sayan Mitra, however it does not support hybrid models; dryvr3: it is a Python 3.6 version of the master branch which support all features of DryVR 2.0.
-
-
+Note that there are three branches: `master`: it is based on Python 3 and supports hybrid models; `symmetries`: it is the modification of the master branch created to support symmetry-based acceleration for reachtube computations created for this ATVA 2019 paper: "Using symmetry transformations in equivariant dynamical systems for their safety verification" by Hussein Sibai, Navid Mokhlesi, and Sayan Mitra, however it does not support hybrid models; `dryvr2`: it is the deprecated version using Python 2.7 which support all features of DryVR 2.0.
 
 
 Installation
 ==================
-Following installation instructions has been tested with Python 2.7.12 on
-Ubuntu 16.04.
+Following installation instructions has been tested with Python 3 on Ubuntu 16.04 and 20.04.
 
-Install System dependencies:
-
-```bash
-$ sudo apt-get install python-pip python-cairo python-tk python-pygraphviz \
-    libglpk-dev
-```
-
-Install PyPi dependencies using `pip`:
-```bash
-$ pip2 install --user --upgrade pip  # Upgrade pip first
-$ pip2 install --user glpk networkx python-igraph matplotlib numpy scipy \
-    sympy z3-solver six
-```
-
-For Python 3.5 or above on Ubuntu 16.04, try the following instructions.
+For Python 3.5 or above on Ubuntu 16.04 or 20.04, try the following instructions.
 
 ```bash
-$ sudo apt-get install python3-pip python3-cairo python3-tk python3-pygraphviz \
-    libglpk-dev
+$ sudo apt-get install python3-pip python3-cairo python3-tk python3-pygraphviz libglpk-dev
 $ pip3 install --user --upgrade pip  # Upgrade pip first
 $ pip3 install --user -r requirements.txt
 ```
 
-If using Python 3 `venv` virtual environment on Ubuntu 16.04, try the following instructions.
+If using Python 3 `venv` virtual environment on Ubuntu 16.04 or 20.04, try the following instructions.
 ```bash
 $ sudo apt-get install python3-pip libcairo2-dev libgraphviz-dev libglpk-dev
 $ pip3 install --upgrade pip  # Upgrade pip first
@@ -64,9 +46,14 @@ The examples descriptions can be found in the documentation. Please note that as
 
 To run controller synthesis, please run:
 ------------------------------------------------------------
+
+```bash
 python graphSearch.py input/[input_file]
+```
 
 for example:
 
+```bash
 python graphSearch.py input/rrtinput/mazefinder.json
+```
 
