@@ -1,24 +1,21 @@
 Installation
 ============
 
-Following installation instructions has been tested with Python 2.7.12 on
-Ubuntu 16.04.
+Following installation instructions has been tested with Python 3.5 on Ubuntu 16.04 as well as Python 3.8 on Ubuntu 20.04.
 
 .. code-block:: bash
 
-    $ sudo apt install python-pip python-cairo python-tk python-pygraphviz \
-        libglpk-dev
-    $ pip2 install --user --upgrade pip
-    $ pip2 install --user glpk networkx python-igraph matplotlib numpy scipy \
-        sympy z3-solver six
+    $ sudo apt-get install python3-pip python3-cairo python3-tk python3-pygraphviz libglpk-dev
+    $ pip3 install --user --upgrade pip  # Upgrade pip first
+    $ pip3 install --user -r requirements.txt
 
 
 If you wish to install DryVR on other operation systems,
 please make sure the following packages are correctly installed.
 
-- Python 2.7
+- Python 3.5 or above
 
-  * Including `Python Tkinter <https://docs.python.org/2.7/library/tk.html>`_
+  * Including `Python Tkinter <https://docs.python.org/3/library/tkinter.html>`_
 
 - `Six <https://six.readthedocs.io/>`_
 - `NumPy <https://numpy.org/>`_
