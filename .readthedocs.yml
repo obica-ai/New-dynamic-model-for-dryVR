@@ -1,1 +1,13 @@
-requirements_file: .readthedocs.requirements.txt
+# Required
+version: 2
+
+formats:
+   - html
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+   configuration: docs/source/conf.py
+
+python:
+   install:
+   - requirements: docs/requirements.txt
