@@ -2,10 +2,9 @@
 version: 2
 
 build:
-  image: stable
+  image: latest
   apt_packages:
-    - ca-certificates
-    - apt-transport-https
+    - ca-certificates  # Explicitly install to update ca-certificates 
 
 formats: []
 
