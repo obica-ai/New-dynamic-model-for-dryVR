@@ -5,6 +5,7 @@ build:
   os: ubuntu-20.04
   apt_packages:
     - ca-certificates  # Explicitly install to update ca-certificates 
+    - apt-https-transport
 
 formats: []
 
