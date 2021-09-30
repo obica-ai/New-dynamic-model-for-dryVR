@@ -11,7 +11,6 @@ DryVR is a framework for verifying cyber-physical systems. It specifically handl
 .. toctree::
    :maxdepth: 2
 
-   status
    installation
    usage
    dryvr's_language
@@ -20,3 +19,4 @@ DryVR is a framework for verifying cyber-physical systems. It specifically handl
    parameters_configuration
    publications
    contact
+   status
