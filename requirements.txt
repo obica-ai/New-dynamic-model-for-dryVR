@@ -1,6 +1,6 @@
 pycairo
 # pygraphviz  
-glpk
+# glpk
 networkx
 python-igraph 
 matplotlib
