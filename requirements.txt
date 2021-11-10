@@ -1,11 +1,11 @@
 pycairo
-pygraphviz
+# pygraphviz  
 glpk
 networkx
-python-igraph
+python-igraph 
 matplotlib
 numpy
 scipy
-sympy
+sympy==1.6.2
 z3-solver
 six

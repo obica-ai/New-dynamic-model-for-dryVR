@@ -1,5 +1,5 @@
 import argparse
-import pygraphviz as pgv
+# import pygraphviz as pgv
 
 from src.plotter.parser import parse
 from src.plotter.plot import plot
@@ -33,18 +33,18 @@ while stack:
         stack.append(cur_node.child[c])
     plot(cur_node, ydim, y_min, y_max, xdim)
 
-# Construct node graph
-G = pgv.AGraph(strict=True, directed=True)
+# # Construct node graph
+# G = pgv.AGraph(strict=True, directed=True)
 
-# Using DFS algorithm to add node and edge of the graph
-G.add_node(init_node.file_name, image='output/' + init_node.file_name + '.png')
-stack = [init_node]
-while stack:
-    cur_node = stack.pop()
-    for c in cur_node.child:
-        child_node = cur_node.child[c]
-        G.add_node(child_node.file_name, image='output/' + child_node.file_name + '.png')
-        G.add_edge(cur_node.file_name, child_node.file_name)
-        stack.append(child_node)
-G.layout(prog='dot')
-G.draw(args.o)  # write previously positioned graph to PNG file
+# # Using DFS algorithm to add node and edge of the graph
+# G.add_node(init_node.file_name, image='output/' + init_node.file_name + '.png')
+# stack = [init_node]
+# while stack:
+#     cur_node = stack.pop()
+#     for c in cur_node.child:
+#         child_node = cur_node.child[c]
+#         G.add_node(child_node.file_name, image='output/' + child_node.file_name + '.png')
+#         G.add_edge(cur_node.file_name, child_node.file_name)
+#         stack.append(child_node)
+# G.layout(prog='dot')
+# G.draw(args.o)  # write previously positioned graph to PNG file
