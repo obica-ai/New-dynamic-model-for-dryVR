@@ -48,9 +48,9 @@ def build_graph(vertex, edge, guards, resets):
     g.es['guards'] = guards
     g.es['resets'] = resets
 
-    if PLOTGRAPH:
-        graph = igraph.plot(g, GRAPHOUTPUT, margin=40)
-        graph.save()
+    # if PLOTGRAPH:
+    #     graph = igraph.plot(g, GRAPHOUTPUT, margin=40)
+    #     graph.save()
     return g
 
 

@@ -1,9 +1,9 @@
-pycairo
+# pycairo
 # pygraphviz  
 # glpk
 networkx
 python-igraph 
-matplotlib
+# matplotlib
 numpy
 scipy
 sympy==1.6.2

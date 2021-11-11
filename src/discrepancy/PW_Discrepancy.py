@@ -2,8 +2,6 @@ from __future__ import division, print_function
 
 import math
 
-import matplotlib.pyplot as plt
-
 
 def read_data(traces):
     """ Read in all the traces """
@@ -287,36 +285,6 @@ def generate_bloat_tube(traces, time_intervals, discrepancies, Initial_Delta, en
 
     return bloat_tube
 
-
-def plot_traces(traces, dim, bloat_tube):
-    """ Plot the traces """
-    # Iterate over all individual traces
-    for i in range(0, len(traces)):
-        trace = traces[i]
-
-        # Obtain desired dimension
-        time = []
-        data = []
-        for j in range(0, len(trace)):
-            # for j in xrange(0,2):
-            time.append(trace[j][0])
-            data.append(trace[j][dim])
-
-        # Plot data
-        if i == 0:
-            plt.plot(time, data, 'b')
-        else:
-            plt.plot(time, data, 'r')
-
-    time = [row[0] for row in bloat_tube]
-    value = [row[dim] for row in bloat_tube]
-    time_bloat = [time[i] for i in range(0, len(value), 2)]
-    lower_bound = [value[i] for i in range(0, len(value), 2)]
-    upper_bound = [value[i + 1] for i in range(0, len(value), 2)]
-    plt.plot(time_bloat, lower_bound, 'g')
-    plt.plot(time_bloat, upper_bound, 'g')
-
-
 # Print out the intervals and discrepancies
 def print_int_disc(discrepancies, time_intervals):
     for nd in range(0, len(discrepancies)):
@@ -325,7 +293,6 @@ def print_int_disc(discrepancies, time_intervals):
                   + ' to ' + str(time_intervals[nd][p + 1]) + ', disc: ' +
                   str(discrepancies[nd][p]))
         print('')
-
 
 def PW_Bloat_to_tube(Initial_Delta, plot_flag, plot_dim, traces, K_value):
     # Read data in
@@ -367,8 +334,8 @@ def PW_Bloat_to_tube(Initial_Delta, plot_flag, plot_dim, traces, K_value):
     reach_tube = generate_bloat_tube(traces, time_intervals, discrepancies, Initial_Delta, end_time, trace_len,
                                      dimensions_nt, delta_time, K_value)
 
-    if plot_flag:
-        plot_traces(traces, plot_dim, reach_tube)
-        plt.show()
+    # if plot_flag:
+    #     plot_traces(traces, plot_dim, reach_tube)
+    #     plt.show()
 
     return reach_tube

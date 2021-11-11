@@ -1,6 +1,6 @@
 from scipy.integrate import odeint
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # Source: https://ths.rwth-aachen.de/research/projects/hypro/biological-model-i/
 

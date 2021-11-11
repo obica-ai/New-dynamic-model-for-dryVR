@@ -1,6 +1,6 @@
 from scipy.integrate import odeint
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # Souce: https://ths.rwth-aachen.de/research/projects/hypro/lorentz-system/ 
 

@@ -1,6 +1,6 @@
 
 from InOutput import *
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from simulate import *
 from TC_Graph import *
 
@@ -61,7 +61,7 @@ PW_Bloat_to_tube('Acc1;Const', [0.1000,0.1000,0.1000,0.2000,0.1000,1.0000,0.1000
 
 '''
 from InOutput import *
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from TC_Graph import *
 #g = mergeGraph()

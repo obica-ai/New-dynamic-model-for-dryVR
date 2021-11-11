@@ -1,7 +1,7 @@
 """
 This file contains graph class for DryVR
 """
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import networkx as nx
 
 
@@ -33,18 +33,18 @@ class Graph:
         for e in edges:
             self.edgeList.append((vertex[e[0]], vertex[e[1]]))
         # Initialize the plot
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111)
+        # self.fig = plt.figure()
+        # self.ax = self.fig.add_subplot(111)
 
         # Initialize the graph
         self.G = nx.DiGraph()
         self.G.add_edges_from(self.edgeList)
         self.pos = nx.spring_layout(self.G)
         self.colors = ['green'] * len(self.G.nodes())
-        self.fig.suptitle('', fontsize=10)
+        # self.fig.suptitle('', fontsize=10)
         # Draw the graph when initialize
-        self.draw()
-        plt.show()
+        # self.draw()
+        # plt.show()
 
     def draw(self):
         """

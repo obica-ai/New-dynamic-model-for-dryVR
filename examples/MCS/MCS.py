@@ -1,6 +1,6 @@
 from scipy.integrate import odeint
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def MCS_dynamic(y,t,u1,u2):
     x1, x2, x3, x4, x5, x6, x7, x8 = y

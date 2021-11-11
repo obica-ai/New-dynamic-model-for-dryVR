@@ -1,6 +1,6 @@
 from scipy.integrate import odeint
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def PDE_dynamics(y,t,u1):
     x1, x2, x3, x4, x5, x6 = y
