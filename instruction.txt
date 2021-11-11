@@ -1,0 +1,18 @@
+Instructions for running DryVR on Ubuntu or Mac
+1. Clone the dryvr repository from https://gitlab.engr.illinois.edu/dryvrgroup/dryvrtool
+    git clone https://gitlab.engr.illinois.edu/dryvrgroup/dryvrtool
+
+2. Go to the root directory of DryVR
+    cd ./dryvrtool 
+
+3. Install dependencies for DryVR
+    For reachability computation functions
+        python3 -m pip install --user -r requirements.txt
+    For plotting functions 
+        python3 -m pip install --user matplotlib
+
+4. To run an example in DryVR 
+    python3 main.py ./input/nondaginput/input_vanderpol.json 
+
+5. To plot the results we can run the following command. The plot will be generated in folder ./output/ by default. 
+    python3 plotter.py
