@@ -110,7 +110,7 @@ def verify(data, sim_function, param_config=None):
         initial_vertex = params.initialVertex
 
     # Build the initial set stack
-    cur_mode_stack = InitialSetStack(initial_vertex, userConfig.REFINETHRES, params.timeHorizon)
+    cur_mode_stack = InitialSetStack(initial_vertex, userConfig.REFINETHRES, params.timeHorizon,0)
     cur_mode_stack.stack.append(InitialSet(params.initialSet[0], params.initialSet[1]))
     cur_mode_stack.bloated_tube.append(buildModeStr(graph, initial_vertex))
     while True:
@@ -199,6 +199,7 @@ def verify(data, sim_function, param_config=None):
                                                      )
 
                 # Use the guard to calculate the next initial set
+                # TODO: Made this function return multiple next_init
                 next_init, truncated_result, transit_time = guard.guard_reachtube(
                     cur_bloated_tube,
                     cur_guard_str,
@@ -208,6 +209,7 @@ def verify(data, sim_function, param_config=None):
                     continue
 
                 # Reset the next initial set
+                # TODO: Made this function handle multiple next_init
                 next_init = reset.reset_set(cur_reset_str, next_init[0], next_init[1])
 
                 # Build next mode stack
@@ -215,8 +217,10 @@ def verify(data, sim_function, param_config=None):
                     cur_successor,
                     userConfig.CHILDREFINETHRES,
                     cur_remain_time - transit_time,
+                    start_time=transit_time+cur_mode_stack.start_time
                 )
                 next_mode_stack.parent = cur_mode_stack
+                # TODO: Append all next_init into the next_mode_stack
                 next_mode_stack.stack.append(InitialSet(next_init[0], next_init[1]))
                 next_mode_stack.bloated_tube.append(
                     cur_mode_stack.bloated_tube[0] + '->' + buildModeStr(graph, cur_successor))
@@ -248,6 +252,9 @@ def verify(data, sim_function, param_config=None):
 
             if not candidate_tube:
                 candidate_tube = cur_bloated_tube
+
+            for i in range(len(candidate_tube)):
+                candidate_tube[i][0] += cur_mode_stack.start_time
 
             # Check the safety for current bloated tube
             safety = checker.check_reachtube(candidate_tube, cur_label)

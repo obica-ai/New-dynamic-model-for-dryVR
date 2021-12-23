@@ -9,7 +9,7 @@ class InitialSetStack:
     This is class is for list of initial sets for a single node
     """
 
-    def __init__(self, mode, threshold, remain_time):
+    def __init__(self, mode, threshold, remain_time, start_time):
         """
         Initial set class initialization function.
 
@@ -32,6 +32,7 @@ class InitialSetStack:
         self.remain_time = remain_time
         # Stores bloated tube result for all tubes start from initial sets in stack
         self.bloated_tube = []
+        self.start_time = start_time
 
     def is_valid(self):
         """
