@@ -41,6 +41,7 @@ def invokeSimulator(modeNum, simFile, initial, timeStep, remainTime):
 	result = []
 	for line in f:
 		line = map(float,line.strip().split(' '))
+		line = list(line)
 		if not result:
 			result.append(line)
 		elif line[0] == result[-1][0]:

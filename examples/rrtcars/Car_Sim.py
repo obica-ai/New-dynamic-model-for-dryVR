@@ -17,7 +17,7 @@ def TC_Simulate(Modes,initialCondition,time_bound):
 def main():
 	t = TC_Simulate("TurnLeft", [0,15,0,0], 10)
 	for line in t:
-		print line
+		print(line)
 if __name__ == "__main__":
 	main()
 

@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     sol = TC_Simulate("Default", [-50, 0.0], 100.0)
     for s in sol:
-		print(s)
+        print(s)
 
     # time = [row[0] for row in sol]
 

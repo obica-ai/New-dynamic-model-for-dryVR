@@ -21,7 +21,7 @@ def TC_Simulate(Modes,initialCondition,time_bound):
 	return Final_trace
 if __name__ == "__main__":
     trace = TC_Simulate("normal", [0,0,1,1], 5)
-    print trace
+    print(trace)
 
     trace = TC_Simulate("normal;normal", [0,0,1,0,0,0,0,1], 5)
-    print trace
+    print(trace)

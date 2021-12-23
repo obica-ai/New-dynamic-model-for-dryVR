@@ -16,10 +16,10 @@ def TC_Simulate(Modes,initialCondition,time_bound):
 				Final_trace = trace
 			else:
 				if len(trace)!=len(Final_trace):
-					print len(trace), len(Final_trace)
+					print(len(trace), len(Final_trace))
 					for i in range(min(len(trace), len(Final_trace))):
-						print trace[i][0], Final_trace[i][0]
-					print Final_trace
+						print(trace[i][0], Final_trace[i][0])
+					print(Final_trace)
 				Final_trace = np.concatenate((Final_trace, trace[:,1:6]), axis=1)
 	else:
 		print('Number of cars does not match the initial condition')
@@ -30,15 +30,15 @@ if __name__ == "__main__":
 
 	sol = TC_Simulate("Dec", [0, 0, 0, 1, 0.0], 30)
 	# for line in sol:
-	# 	print line
+	# 	print(line
 	#nextsol = TC_Simulate("TurnRight",sol[-1][1:],50)#2.4
 
 	#finalsol = TC_Simulate("Const",nextsol[-1][1:],1.5)
-	#print sol
+	#print(sol
 	#for i in sol:
-	#	print i
+	#	print(i
 	#for j in nextsol:
-	#	print j
+	#	print(j
 
 	#nextsoltime = [(row[0]+sol[-1][0]) for row in nextsol]
 	#sxnext = [row[1] for row in nextsol]

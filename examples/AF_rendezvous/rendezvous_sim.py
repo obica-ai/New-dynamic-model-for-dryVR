@@ -163,29 +163,29 @@ def plot_total_force(arr):
 # - Each step is timed so that it is obvious what the limiting functions are.
 ###########################
 def TC_Simulate(curLabel, initCondition, transiteTime):
-    print "\n~~~ Starting Simulation ~~~"
+    print("\n~~~ Starting Simulation ~~~")
     start = dt.datetime.now()
 
     time = dt.datetime.now()
     arr = generate_trace(curLabel, initCondition, transiteTime)
-    print '\tGenerated Trace:', (dt.datetime.now() - time).total_seconds() * 1000, 'ms'
+    print('\tGenerated Trace:', (dt.datetime.now() - time).total_seconds() * 1000, 'ms')
 
     time = dt.datetime.now()
     arr = add_variables(arr)
-    print '\tAdded Variables:', (dt.datetime.now() - time).microseconds / 1000, 'ms'
+    print('\tAdded Variables:', (dt.datetime.now() - time).microseconds / 1000, 'ms')
 
     time = dt.datetime.now()
     arr = calculate_acceleration(arr)
-    print '\tCalculated Acceleration:', (dt.datetime.now() - time).microseconds / 1000, 'ms'
+    print('\tCalculated Acceleration:', (dt.datetime.now() - time).microseconds / 1000, 'ms')
 
     time = dt.datetime.now()
     arr = compact_trace(arr, 100)
-    print '\tCompacted Trace:', (dt.datetime.now() - time).microseconds / 1000, 'ms'
+    print('\tCompacted Trace:', (dt.datetime.now() - time).microseconds / 1000, 'ms')
 
     time = dt.datetime.now()
     arr = calculate_forces(arr)
-    print '\tCalculated Forces:', (dt.datetime.now() - time).microseconds / 1000, 'ms'
+    print('\tCalculated Forces:', (dt.datetime.now() - time).microseconds / 1000, 'ms')
 
-    print "Completed:", (dt.datetime.now() - start).total_seconds() * 1000, 'ms'
-    print "Trace Length:", len(arr)
+    print("Completed:", (dt.datetime.now() - start).total_seconds() * 1000, 'ms')
+    print("Trace Length:", len(arr))
     return arr

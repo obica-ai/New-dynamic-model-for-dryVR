@@ -69,6 +69,6 @@ if __name__ == "__main__":
 
     sol = TC_Simulate("l1", [1.0, 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0], 2.0)
     for s in sol:
-		print(s)
+        print(s)
 
   

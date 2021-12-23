@@ -13,6 +13,3 @@ with open(sys.argv[-1], 'r') as f:
 	data = json.load(f)
 simFunction = importSimFunction(data["directory"])
 safety, reach = verify(data, simFunction)
-lines = reach.raw.split("\n")
-print(type(lines[0]), lines[0])
-initNode, y_min, y_max = parse(lines)

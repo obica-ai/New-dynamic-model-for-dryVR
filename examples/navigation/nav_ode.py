@@ -51,6 +51,6 @@ def TC_Simulate(Mode,initialCondition,time_bound):
     return trace
 
 if __name__ == "__main__":
-    ret = TC_simulate("Zone3", [0.5, 0.5, 0.0, 0.0], 2)
+    ret = TC_Simulate("Zone3", [0.5, 0.5, 0.0, 0.0], 2)
     for r in ret:
-        print r
+        print(r)

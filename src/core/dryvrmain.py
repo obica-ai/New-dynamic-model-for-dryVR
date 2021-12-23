@@ -17,7 +17,8 @@ from src.core.initialsetstack import InitialSetStack, GraphSearchNode
 from src.core.reachtube import ReachTube
 from src.core.reset import Reset
 from src.core.uniformchecker import UniformChecker
-
+# from src.tube_computer.backend.reachabilityengine import ReachabilityEngine
+# from src.tube_computer.backend.initialset import InitialSet
 
 def verify(data, sim_function, param_config=None):
     """
@@ -93,7 +94,7 @@ def verify(data, sim_function, param_config=None):
             safety = checker.check_sim_trace(sim_result[mode], mode)
             if safety == -1:
                 print('Current simulation is not safe. Program halt')
-                print('simulation time', time.time() - t_start)
+                print('simulation time', time.time() - t_start)                    
                 return "UNSAFE", None
     sim_end_time = time.time()
 
@@ -257,7 +258,7 @@ def verify(data, sim_function, param_config=None):
                 unsafe_tube = [cur_mode_stack.bloated_tube[0]] + candidate_tube
                 while cur_mode_stack.parent is not None:
                     prev_mode_stack = cur_mode_stack.parent
-                    unsafe_tube = [prev_mode_stack.bloatedTube[0]] + prev_mode_stack.stack[-1].bloated_tube \
+                    unsafe_tube = [prev_mode_stack.bloated_tube[0]] + prev_mode_stack.stack[-1].bloated_tube \
                         + unsafe_tube
                     cur_mode_stack = prev_mode_stack
                 print('simulation time', sim_end_time - t_start)

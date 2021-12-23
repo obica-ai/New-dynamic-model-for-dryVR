@@ -185,11 +185,11 @@ def Car_simulate(Mode,initial,time_bound):
     return trace
 
 if __name__ == "__main__":
-    print "start test"
+    print("start test")
     # 16.67*3.6 = 60km/hr
     traj = Car_simulate("TurnRight", [0.0,0.0,0.0,21.16], "10")
     for line in traj:
-        print line
+        print(line)
     # # x = [16.67, 4.17, 30.0, 20.0, 25.0, 10.0,8.0,5.0,3.0,27.5,17.5,2,12.5,1]
     # # y = [0.014,0.22,0.0043,0.0097,0.0061,0.039,0.069,0.155,0.43,0.0052,0.0125,0.97,0.025,4.03]
     # speed = 30

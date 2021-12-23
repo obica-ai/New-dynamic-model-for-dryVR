@@ -13,7 +13,8 @@ from src.common.constant import *
 from src.common.io import writeReachTubeFile
 from src.common.utils import randomPoint, calcDelta, calcCenterPoint, trimTraces
 from src.discrepancy.Global_Disc import get_reachtube_segment
-
+# from src.tube_computer.backend.reachabilityengine import ReachabilityEngine
+# from src.tube_computer.backend.initialset import InitialSet
 
 def build_graph(vertex, edge, guards, resets):
     """
@@ -268,6 +269,7 @@ def calc_bloated_tube(
         Bloated reach tube
 
     """
+    random.seed(4)
     cur_center = calcCenterPoint(initial_set[0], initial_set[1])
     cur_delta = calcDelta(initial_set[0], initial_set[1])
     traces = [sim_func(mode_label, cur_center, time_horizon)]
@@ -287,13 +289,19 @@ def calc_bloated_tube(
         for i in range(len(traces)):
             traces[i] = traces[i][:max_idx]
 
+    # The major
     if bloating_method == GLOBAL:
+        # TODO: Replace this with ReachabilityEngine.get_reachtube_segment
         cur_reach_tube: np.ndarray = get_reachtube_segment(np.array(traces), np.array(cur_delta), "PWGlobal")
+        # cur_reach_tube: np.ndarray = ReachabilityEngine.get_reachtube_segment_wrapper(np.array(traces), np.array(cur_delta))
     elif bloating_method == PW:
+        # TODO: Replace this with ReachabilityEngine.get_reachtube_segment
         cur_reach_tube: np.ndarray = get_reachtube_segment(np.array(traces), np.array(cur_delta), "PW")
+        # cur_reach_tube: np.ndarray = ReachabilityEngine.get_reachtube_segment_wrapper(np.array(traces), np.array(cur_delta))
     else:
         raise ValueError("Unsupported bloating method '" + bloating_method + "'")
     final_tube = np.zeros((cur_reach_tube.shape[0]*2, cur_reach_tube.shape[2]))
     final_tube[0::2, :] = cur_reach_tube[:, 0, :]
     final_tube[1::2, :] = cur_reach_tube[:, 1, :]
+    print(final_tube.tolist()[-2], final_tube.tolist()[-1])
     return final_tube.tolist()

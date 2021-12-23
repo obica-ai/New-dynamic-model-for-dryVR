@@ -25,8 +25,8 @@ def simulate(g,initialCondition,Time_horizon):
 	simResult = []
 
 	while remainTime>0:
-		print '-----------------------------------------------------'
-		print 'Current State', g.vs[Current_Vertex]['label']
+		print('-----------------------------------------------------')
+		print('Current State', g.vs[Current_Vertex]['label'])
 
 		Current_successors = g.successors(Current_Vertex)
 		if len(Current_successors)==0:

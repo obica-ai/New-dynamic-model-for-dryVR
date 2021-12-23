@@ -8,7 +8,8 @@ import scipy as sp
 import scipy.spatial
 
 _TRUE_MIN_CONST = -10
-_EPSILON = 1.0e-100
+_EPSILON = 1.0e-6
+_SMALL_EPSILON = 1e-10
 
 
 def get_reachtube_segment(training_traces: np.ndarray, initial_radii: np.ndarray, method='PWGlobal') -> np.array:
@@ -105,13 +106,12 @@ def all_sensitivities_calc(training_traces: np.ndarray, initial_radii: np.ndarra
     normalizing_initial_set_radii[np.where(normalizing_initial_set_radii == 0)] = 1.0
     for cur_dim_ind in range(1, ndims):
         normalized_initial_points: np.array = training_traces[:, 0, 1:] / normalizing_initial_set_radii
-        initial_distances = sp.spatial.distance.pdist(normalized_initial_points, 'chebyshev')
+        initial_distances = sp.spatial.distance.pdist(normalized_initial_points, 'chebyshev') + _SMALL_EPSILON
         for cur_time_ind in range(1, trace_len):
             y_points[cur_dim_ind - 1, cur_time_ind - 1] = np.max((sp.spatial.distance.pdist(
-                np.reshape(training_traces[:, cur_time_ind, cur_dim_ind],
-                           (training_traces.shape[0], 1)), 'chebychev')
-                                                                  / normalizing_initial_set_radii[
-                                                                      cur_dim_ind - 1]) / initial_distances)
+                    np.reshape(training_traces[:, cur_time_ind, cur_dim_ind],
+                    (training_traces.shape[0], 1)), 'chebychev'
+                )/ normalizing_initial_set_radii[cur_dim_ind - 1]) / initial_distances)
     return y_points
 
 if __name__=="__main__":
