@@ -1,0 +1,16 @@
+{
+	"vertex":["ProxA","ProxB","Passive"],
+	"variables":["xp","yp","xd","yd"],
+	"edge":[[0,1],[0,2],[1,2]],
+	"guards":[
+        "And(yp>=-100, xp+yp>=-141.1, xp>=-100, yp-xp<=141.1, yp<=100, xp+yp<=141.1, xp<=100, yp-xp>=-141.1)",
+        "And(t>=120)",
+        "And(t>=120)"
+    ],
+	"initialVertex":0,
+	"resets":["", "",""],
+	"initialSet":[[-925,-425,0,0],[-875,-375,0,0]],
+	"unsafeSet":"",
+	"timeHorizon":200,
+	"directory":"examples/rendezvous"
+}
