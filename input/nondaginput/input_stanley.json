@@ -1,0 +1,13 @@
+{
+	"vertex":["Default"],
+	"edge":[],
+	"variables":["x","y","theta","v"],
+	"guards":[],
+	"initialVertex":0,
+	"initialSet":[[0.0,0.0,0.0,0.0],[5, 5,0,1]],
+	"unsafeSet":"@Allmode:Or(x>=5.5,x<=-1,y>=5.5,y<=-1)",
+	"timeHorizon":10.0,
+	"directory":"examples/stanley",
+  	"bloatingMethod":"PW",
+  	"kvalue":[2,2]
+}
