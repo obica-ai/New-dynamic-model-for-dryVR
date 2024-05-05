@@ -1,0 +1,13 @@
+{
+	"vertex":["Default"],
+	"edge":[],
+	"variables":["x","y","theta","v"],
+	"guards":[],
+	"initialVertex":0,
+	"initialSet":[[0.0, 0.0,0.0,0.0],[5, 5,0,1]],
+	"unsafeSet":"@Allmode:Or(x>=5.5,x<=-0.5,y>=5.5,y<=-0.5)",
+	"timeHorizon":10.0,
+	"directory":"examples/mpc_car",
+  	"bloatingMethod":"PW",
+  	"kvalue":[2,2]
+}
