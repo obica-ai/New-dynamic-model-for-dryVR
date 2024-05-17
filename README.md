@@ -13,7 +13,8 @@ new example model (MPC, stanley), and config files (MPC, stanley)
 
   -input/nondaginput/stanley.json
 
-
+**official introduction**
+==================
 DryVR 2.0 is a software tool for verifying cyber-physical and autonomoous systems. A key feature of DryVR is that it supports reachability analysis of _gray-box_ systems, that is, systems that are described in part as a white box transition system or a program and in part as a black-box simulator as shown in the figure below.
 
 <img src="figures/dryvrmodel.png" style="float: left; margin-right: 10px;" />
