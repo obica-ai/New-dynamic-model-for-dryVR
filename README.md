@@ -1,11 +1,13 @@
 **please reference to https://gitlab.engr.illinois.edu/dryvrgroup/dryvrtool**
 
 **personal modification on DryVR**
+==================
 fix minor setup error and build error due to dependencies misalignment. Now the project can successful build with following command.
 new example model (MPC, stanley), and config files (MPC, stanley) 
 -example/MPC/MPC.py, example/stanley/stanley.py
--input/nondaginput/
-==================
+-input/nondaginput/mpc_car.json
+-input/nondaginput/stanley.json
+
 
 DryVR 2.0 is a software tool for verifying cyber-physical and autonomoous systems. A key feature of DryVR is that it supports reachability analysis of _gray-box_ systems, that is, systems that are described in part as a white box transition system or a program and in part as a black-box simulator as shown in the figure below.
 
