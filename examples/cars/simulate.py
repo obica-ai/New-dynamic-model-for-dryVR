@@ -25,8 +25,8 @@ def simulate(g,initialCondition,Time_horizon):
 	simResult = []
 
 	while remainTime>0:
-		print '-----------------------------------------------------'
-		print 'Current State', g.vs[Current_Vertex]['label']
+		print ('-----------------------------------------------------')
+		print ('Current State', g.vs[Current_Vertex]['label'])
 
 		Current_successors = g.successors(Current_Vertex)
 		if len(Current_successors)==0:
@@ -57,7 +57,7 @@ def simulate(g,initialCondition,Time_horizon):
 		Current_Time = Current_Time + Transite_Time
 
 		Current_Vertex = Current_Successor
-
+	#write_to_file(simResult,'output/TC_Traj.txt','simulation')
 	return simResult
 	#write_to_file(simResult,'output/TC_Traj.txt','simulation')
 

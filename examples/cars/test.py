@@ -1,6 +1,6 @@
 
 from InOutput import *
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from simulate import *
 from TC_Graph import *
 

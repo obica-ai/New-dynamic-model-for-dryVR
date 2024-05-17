@@ -7,7 +7,7 @@ import random
 import networkx as nx
 import numpy as np
 import igraph
-
+from collections import defaultdict
 
 from src.common.constant import *
 from src.common.io import writeReachTubeFile
@@ -146,7 +146,7 @@ def simulate(g, init_condition, time_horizon, guard, sim_func, reset, init_verte
 
     """
 
-    ret_val = igraph.defaultdict(list)
+    ret_val = defaultdict(list)
     # If you do not declare initialMode, then we will just use topological sort to find starting point
     if init_vertex == -1:
         computer_order = g.topological_sorting(mode=igraph.OUT)

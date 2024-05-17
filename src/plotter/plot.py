@@ -10,7 +10,7 @@ colors = ['red', 'green', 'blue', 'yellow', 'black']
 
 def plot(node, dim, y_min, y_max, x_dim):
     fig1 = plt.figure()
-    ax1 = fig1.add_subplot('111')
+    ax1 = fig1.add_subplot('1111')
     lower_bound = []
     upper_bound = []
     for key in sorted(node.lower_bound):
